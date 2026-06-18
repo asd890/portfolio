@@ -1,3 +1,10 @@
+/** Free-form content blocks rendered on the project detail page. */
+export type ContentBlock =
+  | { type: "text"; heading?: string; body: string }
+  | { type: "image"; src: string; caption?: string; full?: boolean }
+  | { type: "images"; srcs: string[]; caption?: string }
+  | { type: "video"; url: string; caption?: string };
+
 export interface Project {
   slug: string;
   title: string;
@@ -19,6 +26,8 @@ export interface Project {
   process: string[];
   solution: string;
   outcomes: { metric: string; value: string }[];
+  /** Rich content sections shown between Process and Solution. */
+  content?: ContentBlock[];
 }
 
 export const projects: Project[] = [
@@ -37,6 +46,7 @@ export const projects: Project[] = [
     tools: ["Figma", "Protopie", "Maze", "Notion"],
     industry: "Social / Consumer",
     // accentColor omitted — will be auto-extracted from the thumbnail
+    accentColor: "#207ab7",
     image: "/projects/LBCThumb.jpg",
     images: ["/projects/snacksnack-1.jpg", "/projects/snacksnack-2.jpg"],
     problem:
@@ -53,6 +63,29 @@ export const projects: Project[] = [
       { metric: "DAU retention", value: "+42%" },
       { metric: "Avg. sessions/day", value: "3.7" },
       { metric: "App Store rating", value: "4.8" },
+    ],
+    content: [
+      {
+        type: "text",
+        heading: "Design Direction",
+        body: "We established a visual language rooted in trust and simplicity — clean surfaces, generous whitespace, and a restrained colour palette that signals credibility without feeling cold.",
+      },
+      {
+        type: "image",
+        src: "/projects/LBCThumb.jpg",
+        caption: "Redesigned home screen — Helsinki usability test round 3",
+        full: true,
+      },
+      {
+        type: "text",
+        heading: "Key Screens",
+        body: "From onboarding to the core trading flow, every screen was stress-tested with real users across three rounds of moderated usability testing.",
+      },
+      {
+        type: "images",
+        srcs: ["/projects/LBCThumb.jpg", "/projects/LBCThumb.jpg"],
+        caption: "Left: onboarding flow · Right: active trade view",
+      },
     ],
   },
   {

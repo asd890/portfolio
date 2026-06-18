@@ -2,9 +2,133 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
 import Nav from "@/components/layout/Nav";
-import type { Project } from "@/lib/projects";
+import type { Project, ContentBlock } from "@/lib/projects";
 import { getContrastColor } from "@/lib/colorUtils";
+
+function youtubeEmbedUrl(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/);
+  return m ? `https://www.youtube-nocookie.com/embed/${m[1]}` : null;
+}
+
+function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
+  return (
+    <section className="px-8 py-24 max-w-6xl mx-auto space-y-20">
+      {blocks.map((block, i) => {
+        if (block.type === "text") {
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="max-w-2xl"
+            >
+              {block.heading && (
+                <p className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase text-[#0a0a0a]/30 mb-4">
+                  {block.heading}
+                </p>
+              )}
+              <p className="font-[family-name:var(--font-playfair)] text-2xl leading-relaxed text-[#0a0a0a]">
+                {block.body}
+              </p>
+            </motion.div>
+          );
+        }
+
+        if (block.type === "image") {
+          return (
+            <motion.figure
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className={block.full ? "-mx-8" : ""}
+            >
+              <div className="relative w-full overflow-hidden rounded-sm" style={{ aspectRatio: "16/9" }}>
+                <Image src={block.src} alt={block.caption ?? ""} fill className="object-cover" sizes="100vw" />
+              </div>
+              {block.caption && (
+                <figcaption className="mt-3 font-[family-name:var(--font-inter)] text-xs text-[#0a0a0a]/35 tracking-wide">
+                  {block.caption}
+                </figcaption>
+              )}
+            </motion.figure>
+          );
+        }
+
+        if (block.type === "images") {
+          return (
+            <motion.figure
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <div
+                className="grid gap-4"
+                style={{ gridTemplateColumns: `repeat(${block.srcs.length}, 1fr)` }}
+              >
+                {block.srcs.map((src, j) => (
+                  <div key={j} className="relative overflow-hidden rounded-sm" style={{ aspectRatio: "4/3" }}>
+                    <Image src={src} alt={block.caption ?? `Image ${j + 1}`} fill className="object-cover" sizes="50vw" />
+                  </div>
+                ))}
+              </div>
+              {block.caption && (
+                <figcaption className="mt-3 font-[family-name:var(--font-inter)] text-xs text-[#0a0a0a]/35 tracking-wide">
+                  {block.caption}
+                </figcaption>
+              )}
+            </motion.figure>
+          );
+        }
+
+        if (block.type === "video") {
+          const embedUrl = youtubeEmbedUrl(block.url);
+          return (
+            <motion.figure
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <div className="relative w-full overflow-hidden rounded-sm bg-[#0a0a0a]/05" style={{ aspectRatio: "16/9" }}>
+                {embedUrl ? (
+                  <iframe
+                    src={embedUrl}
+                    title={block.caption ?? "Video"}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full border-0"
+                  />
+                ) : (
+                  <video
+                    src={block.url}
+                    controls
+                    className="absolute inset-0 w-full h-full"
+                  />
+                )}
+              </div>
+              {block.caption && (
+                <figcaption className="mt-3 font-[family-name:var(--font-inter)] text-xs text-[#0a0a0a]/35 tracking-wide">
+                  {block.caption}
+                </figcaption>
+              )}
+            </motion.figure>
+          );
+        }
+
+        return null;
+      })}
+    </section>
+  );
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -196,6 +320,11 @@ export default function ProjectDetail({ project }: { project: Project }) {
           ))}
         </div>
       </section>
+
+      {/* Rich content blocks */}
+      {project.content && project.content.length > 0 && (
+        <ContentBlocks blocks={project.content} />
+      )}
 
       {/* Solution — full bleed color */}
       <section
