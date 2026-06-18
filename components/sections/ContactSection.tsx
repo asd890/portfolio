@@ -37,7 +37,7 @@ export default function ContactSection() {
           className="flex flex-wrap gap-6"
         >
           {[
-            { label: "Email", href: "mailto:hello@yourname.com", text: "hello@yourname.com" },
+            { label: "Email", href: "admin@ahmednaik.com", text: "admin@ahmednaik.com" },
             { label: "LinkedIn", href: "#", text: "linkedin.com/in/yourname" },
             { label: "Behance", href: "#", text: "behance.net/yourname" },
             { label: "Dribbble", href: "#", text: "dribbble.com/yourname" },

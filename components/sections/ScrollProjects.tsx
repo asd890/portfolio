@@ -9,8 +9,91 @@ import {
 } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { projects } from "@/lib/projects";
+import { useNavColor } from "@/contexts/NavColorContext";
 
 const SECTION_HEIGHT = 100; // vh per project
+
+function ProjectCard({
+  project,
+  position, // -1 = prev, 0 = current, 1 = next
+  onClick,
+}: {
+  project: (typeof projects)[0];
+  position: -1 | 0 | 1;
+  onClick: () => void;
+}) {
+  const isCurrent = position === 0;
+
+  const yPercent = position * 96; // how far prev/next are offset
+  const rotate = 0;
+  const scale = isCurrent ? 1 : 0.88;
+  const opacity = isCurrent ? 1 : 0.55;
+  const zIndex = isCurrent ? 10 : 5;
+
+  return (
+    <motion.div
+      className={isCurrent ? "cursor-pointer group" : "pointer-events-none"}
+      onClick={isCurrent ? onClick : undefined}
+      animate={{ y: `${yPercent}%`, rotate, scale, opacity }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        position: "absolute",
+        width: "100%",
+        zIndex,
+      }}
+    >
+      <div
+        className="relative w-full overflow-hidden shadow-2xl"
+        style={{
+          aspectRatio: "4/3",
+          borderRadius: "3px",
+          backgroundColor: project.accentColor,
+          filter: isCurrent
+            ? "brightness(0.82) contrast(1.05)"
+            : "brightness(0.7) contrast(1.0)",
+          transition: "filter 0.3s",
+        }}
+      >
+        {/* Large initial letter */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className="font-[family-name:var(--font-playfair)] italic select-none"
+            style={{
+              fontSize: "clamp(4rem, 12vw, 10rem)",
+              color: project.textColor + "15",
+            }}
+          >
+            {project.title[0]}
+          </span>
+        </div>
+
+        {/* Bottom strip — only on current */}
+        {isCurrent && (
+          <div
+            className="absolute bottom-0 left-0 right-0 px-5 py-4 flex items-end justify-between"
+            style={{
+              background: `linear-gradient(to top, ${project.accentColor} 0%, transparent 100%)`,
+              opacity: 0.9,
+            }}
+          >
+            <span
+              className="font-[family-name:var(--font-inter)] text-xs tracking-widest"
+              style={{ color: project.textColor + "80" }}
+            >
+              {project.year}
+            </span>
+            <span
+              className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{ color: project.textColor }}
+            >
+              View →
+            </span>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function ScrollProjects() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -19,21 +102,23 @@ export default function ScrollProjects() {
   const [direction, setDirection] = useState<1 | -1>(1);
   const [expandingSlug, setExpandingSlug] = useState<string | null>(null);
 
+  const { setAccentColor } = useNavColor();
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    const idx = Math.min(
-      Math.floor(v * projects.length),
-      projects.length - 1
-    );
-    setDirection((prev) => {
-      const d = idx > activeIndex ? 1 : -1;
-      return d;
-    });
+    const idx = Math.min(Math.floor(v * projects.length), projects.length - 1);
+    setDirection(idx > activeIndex ? 1 : -1);
     setActiveIndex(idx);
+    // publish accent color so navbar can react
+    if (v > 0 && v < 1) {
+      setAccentColor(projects[idx].accentColor);
+    } else {
+      setAccentColor(null);
+    }
   });
 
   const handleClick = useCallback(
@@ -45,47 +130,30 @@ export default function ScrollProjects() {
   );
 
   const project = projects[activeIndex];
+  const prevProject = activeIndex > 0 ? projects[activeIndex - 1] : null;
+  const nextProject =
+    activeIndex < projects.length - 1 ? projects[activeIndex + 1] : null;
 
   const slideVariants = {
-    enter: (d: number) => ({
-      y: d > 0 ? 60 : -60,
-      opacity: 0,
-    }),
+    enter: (d: number) => ({ y: d > 0 ? 50 : -50, opacity: 0 }),
     center: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+      transition: {
+        duration: 0.55,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
     },
     exit: (d: number) => ({
-      y: d > 0 ? -40 : 40,
+      y: d > 0 ? -35 : 35,
       opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" as const },
-    }),
-  };
-
-  const imageVariants = {
-    enter: (d: number) => ({
-      y: d > 0 ? 100 : -100,
-      opacity: 0,
-      rotate: d > 0 ? 4 : -4,
-    }),
-    center: {
-      y: 0,
-      opacity: 1,
-      rotate: 0,
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
-    },
-    exit: (d: number) => ({
-      y: d > 0 ? -60 : 60,
-      opacity: 0,
-      rotate: d > 0 ? -3 : 3,
       transition: { duration: 0.3, ease: "easeIn" as const },
     }),
   };
 
   return (
     <>
-      {/* Scroll spacer — defines total scroll distance */}
+      {/* Scroll spacer */}
       <div
         ref={containerRef}
         style={{ height: `${projects.length * SECTION_HEIGHT}vh` }}
@@ -94,25 +162,25 @@ export default function ScrollProjects() {
         {/* Sticky full-screen panel */}
         <div className="sticky top-0 h-screen z-10 overflow-hidden">
 
-          {/* Background color — always visible, animates on color change */}
+          {/* Background */}
           <motion.div
             className="absolute inset-0 z-0"
             animate={{ backgroundColor: project.accentColor }}
             transition={{ duration: 0.7, ease: "easeInOut" }}
           />
 
-          {/* Left half — text content */}
-          <div className="absolute inset-y-0 left-0 w-1/2 flex flex-col justify-end pb-16 pl-10 pr-8">
+          {/* Left — text, vertically centered */}
+          <div className="absolute inset-y-0 left-0 w-1/2 flex flex-col justify-center pl-12 pr-8 z-10">
 
             {/* Counter */}
             <p
-              className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase mb-12 transition-colors duration-500"
-              style={{ color: project.textColor + "70" }}
+              className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase mb-10"
+              style={{ color: project.textColor + "60" }}
             >
               Selected Work —{" "}
               <motion.span
                 key={activeIndex}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
                 className="inline-block"
@@ -143,14 +211,14 @@ export default function ScrollProjects() {
                   className="font-[family-name:var(--font-playfair)] leading-[0.88] mb-6"
                   style={{
                     color: project.textColor,
-                    fontSize: "clamp(2.8rem, 6vw, 6rem)",
+                    fontSize: "clamp(2.6rem, 5.5vw, 5.5rem)",
                   }}
                 >
                   {project.title}
                 </h2>
 
                 <p
-                  className="font-[family-name:var(--font-inter)] text-base leading-relaxed mb-10 max-w-xs"
+                  className="font-[family-name:var(--font-inter)] text-sm leading-relaxed mb-10 max-w-xs"
                   style={{ color: project.textColor + "AA" }}
                 >
                   {project.description}
@@ -158,7 +226,8 @@ export default function ScrollProjects() {
 
                 <button
                   onClick={() => handleClick(project.slug)}
-                  className="group flex items-center gap-3 font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase cursor-pointer"
+                  className="group flex items-center gap-3 font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase cursor-none"
+                  data-cursor="view"
                   style={{ color: project.textColor }}
                 >
                   <span>Open Case Study</span>
@@ -170,66 +239,114 @@ export default function ScrollProjects() {
             </AnimatePresence>
           </div>
 
-          {/* Right half — project image */}
-          <div className="absolute inset-y-0 right-0 w-1/2 flex items-center justify-center pr-12">
-            <AnimatePresence mode="popLayout" custom={direction}>
-              <motion.div
-                key={project.slug}
-                custom={direction}
-                variants={imageVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="w-full max-w-md cursor-pointer group"
-                onClick={() => handleClick(project.slug)}
-              >
-                <div
-                  className="relative w-full overflow-hidden rounded-[2px] shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
-                  style={{
-                    aspectRatio: "4/3",
-                    backgroundColor: project.accentColor,
-                    filter: "brightness(0.82) contrast(1.05)",
-                  }}
-                >
-                  {/* Large initial */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span
-                      className="font-[family-name:var(--font-playfair)] italic select-none"
-                      style={{
-                        fontSize: "clamp(5rem, 14vw, 12rem)",
-                        color: project.textColor + "15",
-                      }}
-                    >
-                      {project.title[0]}
-                    </span>
-                  </div>
+          {/* Right — stacked tilted cards */}
+          <div className="absolute inset-y-0 right-0 w-1/2 flex items-center justify-center overflow-hidden">
+            {/* Card stack container — sized to ~55% of the panel width */}
+            <div
+              className="relative"
+              style={{ width: "90%", aspectRatio: "4/3" }}
+            >
+              {/* Previous card — peeks from top */}
+              {prevProject && (
+                <ProjectCard
+                  key={`prev-${prevProject.slug}`}
+                  project={prevProject}
+                  position={-1}
+                  onClick={() => {}}
+                />
+              )}
 
-                  {/* Bottom strip */}
+              {/* Next card — peeks from bottom */}
+              {nextProject && (
+                <ProjectCard
+                  key={`next-${nextProject.slug}`}
+                  project={nextProject}
+                  position={1}
+                  onClick={() => {}}
+                />
+              )}
+
+              {/* Current card — centered and prominent */}
+              <AnimatePresence mode="popLayout" custom={direction}>
+                <motion.div
+                  key={`current-${project.slug}`}
+                  custom={direction}
+                  variants={{
+                    enter: (d: number) => ({
+                      y: d > 0 ? "40%" : "-40%",
+                      opacity: 0,
+                      rotate: d > 0 ? 2 : -8,
+                      scale: 0.9,
+                    }),
+                    center: {
+                      y: "0%",
+                      opacity: 1,
+                      rotate: 0,
+                      scale: 1,
+                      transition: {
+                        duration: 0.6,
+                        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+                      },
+                    },
+                    exit: (d: number) => ({
+                      y: d > 0 ? "-40%" : "40%",
+                      opacity: 0,
+                      rotate: d > 0 ? -8 : 2,
+                      scale: 0.9,
+                      transition: { duration: 0.35, ease: "easeIn" as const },
+                    }),
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="absolute inset-0 cursor-none group"
+                  style={{ zIndex: 10 }}
+                  data-cursor="view"
+                  onClick={() => handleClick(project.slug)}
+                >
                   <div
-                    className="absolute bottom-0 left-0 right-0 px-5 py-4 flex items-end justify-between"
+                    className="relative w-full h-full overflow-hidden shadow-2xl"
                     style={{
-                      background: `linear-gradient(to top, ${project.accentColor} 0%, transparent 100%)`,
-                      opacity: 0.9,
+                      borderRadius: "3px",
+                      backgroundColor: project.accentColor,
+                      filter: "brightness(0.82) contrast(1.05)",
                     }}
                   >
-                    <span
-                      className="font-[family-name:var(--font-inter)] text-xs tracking-widest"
-                      style={{ color: project.textColor + "80" }}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span
+                        className="font-[family-name:var(--font-playfair)] italic select-none"
+                        style={{
+                          fontSize: "clamp(4rem, 12vw, 10rem)",
+                          color: project.textColor + "15",
+                        }}
+                      >
+                        {project.title[0]}
+                      </span>
+                    </div>
+                    <div
+                      className="absolute bottom-0 left-0 right-0 px-5 py-4 flex items-end justify-between"
+                      style={{
+                        background: `linear-gradient(to top, ${project.accentColor} 0%, transparent 100%)`,
+                        opacity: 0.9,
+                      }}
                     >
-                      {project.year}
-                    </span>
-                    <motion.span
-                      className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase"
-                      initial={{ opacity: 0 }}
-                      whileHover={{ opacity: 1 }}
-                      style={{ color: project.textColor }}
-                    >
-                      View →
-                    </motion.span>
+                      <span
+                        className="font-[family-name:var(--font-inter)] text-xs tracking-widest"
+                        style={{ color: project.textColor + "80" }}
+                      >
+                        {project.year}
+                      </span>
+                      <span
+                        className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ color: project.textColor }}
+                      >
+                        View →
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Dot navigation — right edge */}
@@ -267,7 +384,7 @@ export default function ScrollProjects() {
             ))}
           </div>
 
-          {/* Bottom progress bar */}
+          {/* Progress bar */}
           <div
             className="absolute bottom-0 left-0 right-0 h-[1px]"
             style={{ backgroundColor: project.textColor + "20" }}
@@ -282,14 +399,17 @@ export default function ScrollProjects() {
         </div>
       </div>
 
-      {/* Page transition wipe overlay on click */}
+      {/* Page transition wipe */}
       <AnimatePresence>
         {expandingSlug && (
           <motion.div
             className="fixed inset-0 z-[200]"
             initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
             animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
-            transition={{ duration: 0.65, ease: [0.76, 0, 0.24, 1] as [number, number, number, number] }}
+            transition={{
+              duration: 0.65,
+              ease: [0.76, 0, 0.24, 1] as [number, number, number, number],
+            }}
             style={{
               backgroundColor:
                 projects.find((p) => p.slug === expandingSlug)?.accentColor ??

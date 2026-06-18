@@ -29,7 +29,7 @@ function AnimatedHeadline({ text }: { text: string }) {
       className="font-[family-name:var(--font-playfair)] text-[clamp(3rem,8vw,9rem)] leading-[0.9] font-normal tracking-tight text-[#0a0a0a]"
     >
       {words.map((word, i) => (
-        <span key={i} className="inline-block overflow-hidden mr-[0.2em]">
+        <span key={i} className="inline-block overflow-hidden mr-[0.2em] pb-[0.18em] mb-[-0.18em]">
           <motion.span variants={wordVariants} className="inline-block">
             {word}
           </motion.span>
@@ -56,7 +56,76 @@ export default function Hero() {
         }}
       />
 
+      {/* Blurred dark blobs behind the navbar area */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: 420,
+            height: 320,
+            top: -60,
+            left: "18%",
+            background: "rgba(10,10,10,0.13)",
+            filter: "blur(72px)",
+          }}
+          animate={{ x: [0, 30, -20, 0], y: [0, -18, 12, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: 280,
+            height: 220,
+            top: -40,
+            right: "12%",
+            background: "rgba(10,10,10,0.09)",
+            filter: "blur(56px)",
+          }}
+          animate={{ x: [0, -24, 18, 0], y: [0, 20, -10, 0] }}
+          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+        />
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: 200,
+            height: 160,
+            top: 20,
+            left: "55%",
+            background: "rgba(10,10,10,0.07)",
+            filter: "blur(48px)",
+          }}
+          animate={{ x: [0, 18, -12, 0], y: [0, -14, 8, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 6 }}
+        />
+      </div>
+
       <motion.div style={{ y, opacity }} className="relative z-10 max-w-[90vw]">
+
+        {/* Status pills */}
+        <div className="flex flex-wrap items-center gap-2 mb-10">
+          {[
+            { label: "Available for work", pulse: true },
+            { label: "Helsinki, Finland" },
+            { label: "UX · Product · Brand" },
+          ].map(({ label, pulse }, i) => (
+            <motion.span
+              key={label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 + i * 0.08, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0a0a0a]/12 font-[family-name:var(--font-inter)] text-xs tracking-wide text-[#0a0a0a]/55"
+            >
+              {pulse && (
+                <span className="relative flex h-[7px] w-[7px]">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+                  <span className="relative inline-flex rounded-full h-[7px] w-[7px] bg-emerald-500" />
+                </span>
+              )}
+              {label}
+            </motion.span>
+          ))}
+        </div>
+
         <AnimatedHeadline text="Designing products, brands, and experiences that people remember." />
 
         <motion.div
@@ -77,15 +146,6 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* Floating year counter */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute top-1/3 right-8 font-[family-name:var(--font-playfair)] text-[8rem] font-normal text-[#0a0a0a]/[0.04] leading-none select-none pointer-events-none"
-      >
-        08
-      </motion.div>
     </section>
   );
 }

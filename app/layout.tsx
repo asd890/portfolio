@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import SmoothScrollProvider from "@/components/layout/SmoothScrollProvider";
 import Cursor from "@/components/ui/Cursor";
+import { NavColorProvider } from "@/contexts/NavColorContext";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -29,10 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
       <body>
-        <SmoothScrollProvider>
-          <Cursor />
-          {children}
-        </SmoothScrollProvider>
+        <NavColorProvider>
+          <SmoothScrollProvider>
+            <Cursor />
+            {children}
+          </SmoothScrollProvider>
+        </NavColorProvider>
       </body>
     </html>
   );
