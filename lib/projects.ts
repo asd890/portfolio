@@ -23,9 +23,9 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    slug: "snacksnack",
-    title: "SnackSnack",
-    category: "UX Design / Social Product",
+    slug: "localbitcoins",
+    title: "LocalBitcoins",
+    category: "UX / UI Design | Visual Design",
     description:
       "Designing a new way for close friends to communicate through voice and video.",
     fullDescription:
@@ -36,8 +36,8 @@ export const projects: Project[] = [
     team: "4 designers, 6 engineers",
     tools: ["Figma", "Protopie", "Maze", "Notion"],
     industry: "Social / Consumer",
-    accentColor: "#FF2D78",
-    bgColor: "#FF2D78",
+    accentColor: "#5e91f7",
+    bgColor: "#1d61f4",
     textColor: "#FFFFFF",
     image: "/projects/snacksnack.jpg",
     images: ["/projects/snacksnack-1.jpg", "/projects/snacksnack-2.jpg"],
