@@ -13,7 +13,7 @@ const fadeUp = {
 
 export default function ProjectDetail({ project }: { project: Project }) {
   const heroRef = useRef<HTMLDivElement>(null);
-  const accent = accent ?? "#888888";
+  const accent = project.accentColor ?? "#888888";
   const textColor = getContrastColor(accent);
   const { scrollYProgress } = useScroll({
     target: heroRef,
