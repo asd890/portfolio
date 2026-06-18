@@ -24,7 +24,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
       className="min-h-screen"
       style={{ backgroundColor: "#f5f4f0" }}
     >
-      <Nav showBack theme="light" />
+      <Nav showBack />
 
       {/* Hero */}
       <section ref={heroRef} className="relative min-h-screen flex flex-col justify-center px-8 pt-32 pb-24 overflow-hidden">
