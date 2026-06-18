@@ -39,7 +39,7 @@ export const projects: Project[] = [
     accentColor: "#5e91f7",
     bgColor: "#1d61f4",
     textColor: "#FFFFFF",
-    image: "/projects/snacksnack.jpg",
+    image: "/projects/imgs/LBCthumb.jpg",
     images: ["/projects/snacksnack-1.jpg", "/projects/snacksnack-2.jpg"],
     problem:
       "Friends lose touch not because they stop caring, but because digital communication feels performative. We needed to strip that away.",
