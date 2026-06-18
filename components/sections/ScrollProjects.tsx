@@ -158,7 +158,7 @@ export default function ScrollProjects() {
           <div className="absolute inset-y-0 left-0 w-1/2 flex flex-col justify-center pl-12 pr-8 z-10">
 
             {/* Counter */}
-            <p className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase mb-10" style={{ color: textColor + "60" }}>
+            <p className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase mb-10" style={{ color: textColor + "60" }}>
               Selected Work —{" "}
               <motion.span key={activeIndex} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="inline-block">
                 {String(activeIndex + 1).padStart(2, "0")}
@@ -171,11 +171,11 @@ export default function ScrollProjects() {
 
                 {/* Year + category row */}
                 <div className="flex items-center gap-4 mb-4">
-                  <span className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase" style={{ color: textColor + "45" }}>
+                  <span className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase" style={{ color: textColor + "45" }}>
                     {project.year}
                   </span>
                   <span style={{ color: textColor + "25" }}>·</span>
-                  <span className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase" style={{ color: textColor + "60" }}>
+                  <span className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase" style={{ color: textColor + "60" }}>
                     {project.category}
                   </span>
                 </div>
@@ -187,13 +187,13 @@ export default function ScrollProjects() {
                   {project.title}
                 </h2>
 
-                <p className="font-[family-name:var(--font-inter)] text-sm leading-relaxed mb-10 max-w-xs" style={{ color: textColor + "AA" }}>
+                <p className="font-[family-name:var(--font-inter)] text-base leading-relaxed mb-10 max-w-xs" style={{ color: textColor + "AA" }}>
                   {project.description}
                 </p>
 
                 <button
                   onClick={() => handleClick(project.slug)}
-                  className="group flex items-center gap-3 font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase cursor-none"
+                  className="group flex items-center gap-3 font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase cursor-none"
                   data-cursor="view"
                   style={{ color: textColor }}
                 >
