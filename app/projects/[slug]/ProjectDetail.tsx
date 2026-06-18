@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Nav from "@/components/layout/Nav";
 import type { Project } from "@/lib/projects";
+import { getContrastColor } from "@/lib/colorUtils";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -12,6 +13,8 @@ const fadeUp = {
 
 export default function ProjectDetail({ project }: { project: Project }) {
   const heroRef = useRef<HTMLDivElement>(null);
+  const accent = accent ?? "#888888";
+  const textColor = getContrastColor(accent);
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -59,17 +62,17 @@ export default function ProjectDetail({ project }: { project: Project }) {
             animate={{ scaleY: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.76, 0, 0.24, 1] }}
             className="absolute inset-0 z-10 origin-top"
-            style={{ backgroundColor: project.accentColor }}
+            style={{ backgroundColor: accent }}
           />
           <div
             className="absolute inset-0 flex items-center justify-center"
-            style={{ backgroundColor: project.accentColor + "33" }}
+            style={{ backgroundColor: accent + "33" }}
           >
             <span
               className="font-[family-name:var(--font-playfair)] italic select-none"
               style={{
                 fontSize: "clamp(5rem,15vw,14rem)",
-                color: project.accentColor + "66",
+                color: accent + "66",
               }}
             >
               {project.title[0]}
@@ -197,7 +200,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
       {/* Solution — full bleed color */}
       <section
         className="px-8 py-32"
-        style={{ backgroundColor: project.accentColor }}
+        style={{ backgroundColor: accent }}
       >
         <div className="max-w-6xl mx-auto">
           <motion.p
@@ -206,7 +209,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
             viewport={{ once: true }}
             variants={fadeUp}
             className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase mb-8"
-            style={{ color: project.textColor + "80" }}
+            style={{ color: textColor + "80" }}
           >
             Solution
           </motion.p>
@@ -216,7 +219,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
             viewport={{ once: true, margin: "-10%" }}
             variants={fadeUp}
             className="font-[family-name:var(--font-playfair)] text-[clamp(1.8rem,4vw,3.5rem)] leading-[1.2]"
-            style={{ color: project.textColor }}
+            style={{ color: textColor }}
           >
             {project.solution}
           </motion.p>
@@ -248,7 +251,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
             >
               <p
                 className="font-[family-name:var(--font-playfair)] text-[clamp(2.5rem,6vw,5rem)] leading-none mb-2"
-                style={{ color: project.accentColor }}
+                style={{ color: accent }}
               >
                 {o.value}
               </p>

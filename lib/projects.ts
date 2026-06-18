@@ -10,11 +10,11 @@ export interface Project {
   team: string;
   tools: string[];
   industry: string;
-  accentColor: string;
-  bgColor: string;
-  textColor: string;
-  image: string;
-  images: string[];
+  /** Hex color for the section background. Optional — auto-extracted from image if omitted. */
+  accentColor?: string;
+  /** Path to the thumbnail image inside /public. Optional. */
+  image?: string;
+  images?: string[];
   problem: string;
   process: string[];
   solution: string;
@@ -36,9 +36,7 @@ export const projects: Project[] = [
     team: "4 designers, 6 engineers",
     tools: ["Figma", "Protopie", "Maze", "Notion"],
     industry: "Social / Consumer",
-    accentColor: "#5e91f7",
-    bgColor: "#1d61f4",
-    textColor: "#FFFFFF",
+    // accentColor omitted — will be auto-extracted from the thumbnail
     image: "/projects/LBCThumb.jpg",
     images: ["/projects/snacksnack-1.jpg", "/projects/snacksnack-2.jpg"],
     problem:
@@ -72,8 +70,6 @@ export const projects: Project[] = [
     tools: ["Figma", "FigJam", "UserTesting", "Amplitude"],
     industry: "Fintech / Banking",
     accentColor: "#00D4C8",
-    bgColor: "#00D4C8",
-    textColor: "#0A0A0A",
     image: "/projects/meridian.jpg",
     images: ["/projects/meridian-1.jpg", "/projects/meridian-2.jpg"],
     problem:
@@ -107,8 +103,6 @@ export const projects: Project[] = [
     tools: ["Figma", "Storybook", "Tokens Studio", "Zeroheight"],
     industry: "SaaS / Enterprise",
     accentColor: "#7B5CF0",
-    bgColor: "#7B5CF0",
-    textColor: "#FFFFFF",
     image: "/projects/nucleus.jpg",
     images: ["/projects/nucleus-1.jpg", "/projects/nucleus-2.jpg"],
     problem:
@@ -142,8 +136,6 @@ export const projects: Project[] = [
     tools: ["Figma", "After Effects", "Illustrator", "Photoshop"],
     industry: "Consumer / Health",
     accentColor: "#FF6B35",
-    bgColor: "#FF6B35",
-    textColor: "#FFFFFF",
     image: "/projects/pulse.jpg",
     images: ["/projects/pulse-1.jpg", "/projects/pulse-2.jpg"],
     problem:
@@ -177,8 +169,6 @@ export const projects: Project[] = [
     tools: ["Figma", "Maze", "Hotjar", "Shopify"],
     industry: "E-Commerce / Art",
     accentColor: "#2ECC7F",
-    bgColor: "#2ECC7F",
-    textColor: "#0A0A0A",
     image: "/projects/folio.jpg",
     images: ["/projects/folio-1.jpg", "/projects/folio-2.jpg"],
     problem:
