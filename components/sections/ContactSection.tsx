@@ -86,16 +86,12 @@ export default function ContactSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
-              className="font-[family-name:var(--font-playfair)] text-[clamp(1.6rem,5vw,5rem)] leading-none group-hover:text-[#0a0a0a] transition-colors duration-300"
-              style={{ color: "#f5f4f0" }}
+              className="font-[family-name:var(--font-playfair)] text-[clamp(1.6rem,5vw,5rem)] leading-none text-[#f5f4f0] group-hover:text-[#0a0a0a] transition-colors duration-500"
             >
               {copied ? "Copied ✓" : "admin@ahmednaik.com"}
             </motion.span>
 
-            <span
-              className="flex-shrink-0 font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase transition-colors duration-300 group-hover:text-[#0a0a0a]"
-              style={{ color: "rgba(245,244,240,0.35)" }}
-            >
+            <span className="flex-shrink-0 font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase text-[#f5f4f0]/35 group-hover:text-[#0a0a0a]/50 transition-colors duration-500">
               {copied ? "Done" : "Click to copy"}
             </span>
           </span>
