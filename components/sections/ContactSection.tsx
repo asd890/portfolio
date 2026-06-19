@@ -21,17 +21,13 @@ export default function ContactSection() {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("https://formspree.io/f/mqeoryoj", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ name, email, message }),
       });
-      const text = await res.text();
-      let data: { ok?: boolean; error?: string } = {};
-      try { data = JSON.parse(text); } catch {
-        throw new Error(`Server returned unexpected response (${res.status}): ${text.slice(0, 120)}`);
-      }
-      if (!res.ok) throw new Error(data.error ?? `Request failed with status ${res.status}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.errors?.[0]?.message ?? "Submission failed.");
       setStatus("sent");
       setName(""); setEmail(""); setMessage("");
     } catch (err) {
