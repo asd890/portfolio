@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 const containerVariants = {
   hidden: {},
@@ -41,9 +41,10 @@ function AnimatedHeadline({ text }: { text: string }) {
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const { scrollYProgress, scrollY } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  const rawOpacity = useTransform(scrollY, [0, 320], [1, 0]);
+  const opacity = useSpring(rawOpacity, { stiffness: 200, damping: 30, restDelta: 0.001 });
 
   return (
     <section ref={ref} className="relative min-h-screen flex flex-col justify-end pb-16 md:pb-24 px-5 md:px-8 pt-32 overflow-hidden">
