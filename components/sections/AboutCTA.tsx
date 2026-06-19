@@ -16,7 +16,7 @@ export default function AboutCTA() {
       className="py-32 px-5 md:px-8"
       style={{ backgroundColor: "var(--bg)" }}
     >
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl">
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}

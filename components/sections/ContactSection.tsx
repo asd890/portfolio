@@ -8,7 +8,7 @@ export default function ContactSection() {
   const inView = useInView(ref, { once: true, margin: "-20%" });
 
   return (
-    <section ref={ref} className="relative px-8 py-40 overflow-hidden">
+    <section ref={ref} className="relative px-5 md:px-8 py-40 overflow-hidden">
       <div className="max-w-5xl">
         <motion.p
           initial={{ opacity: 0, y: 20 }}
