@@ -73,8 +73,7 @@ export default function ScrollProjects() {
   const activeIndexRef = useRef(0);
   const lockedRef = useRef(false);
   const entryLockRef = useRef(false);
-  // sectionRef is also the 500vh container — getBoundingClientRect on it
-  // tells us whether the sticky panel currently fills the viewport.
+  const sectionWasInViewRef = useRef(false);
 
   const resolvedColors = useResolvedColors();
   const { setAccentColor } = useNavColor();
@@ -91,19 +90,9 @@ export default function ScrollProjects() {
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-    let wasIntersecting = false;
     const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting && !wasIntersecting) {
-          // Section just came into view — Lenis still has residual momentum.
-          // Block navigation for 1 s so that momentum doesn't skip project 0.
-          entryLockRef.current = true;
-          setTimeout(() => { entryLockRef.current = false; }, 1000);
-        }
-        wasIntersecting = e.isIntersecting;
-        if (!e.isIntersecting) setAccentColor(null);
-      },
-      { threshold: 0.5 }
+      ([e]) => { if (!e.isIntersecting) { setAccentColor(null); sectionWasInViewRef.current = false; } },
+      { threshold: 0 }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -137,12 +126,25 @@ export default function ScrollProjects() {
       if (!el) return;
       // Only act while the sticky panel fills the viewport
       const { top, bottom } = el.getBoundingClientRect();
-      if (top > 1 || bottom < window.innerHeight - 1) return;
+      const nowInView = top <= 1 && bottom >= window.innerHeight - 1;
+
+      if (!nowInView) {
+        sectionWasInViewRef.current = false;
+        return;
+      }
+
+      // Detect the exact moment the section enters view and start a cooldown
+      // to absorb Lenis's residual deceleration momentum.
+      if (!sectionWasInViewRef.current) {
+        sectionWasInViewRef.current = true;
+        entryLockRef.current = true;
+        setTimeout(() => { entryLockRef.current = false; }, 1000);
+      }
 
       const dir = e.deltaY > 0 ? 1 : -1;
       const curr = activeIndexRef.current;
 
-      // Absorb Lenis arrival momentum — don't navigate yet, just hold the page.
+      // Hold during entry cooldown — absorb events without navigating.
       if (entryLockRef.current) {
         e.preventDefault();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
