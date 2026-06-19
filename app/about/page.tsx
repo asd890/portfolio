@@ -53,6 +53,14 @@ const education = [
     institution: "Tampere University",
     location: "Tampere",
     degree: "Master's in Human-Technology Interaction",
+    summary: "Focused on human-computer interaction principles, user-centred design methods, and the research skills needed to understand people before solving for them.",
+  },
+  {
+    period: "Graduated 2021",
+    institution: "COMSATS University",
+    location: "Islamabad",
+    degree: "Bachelor's in Computer Science",
+    summary: "Grounding in software engineering, algorithms, and systems thinking — the technical foundation that informs how I collaborate with engineers and reason about product constraints.",
   },
 ];
 
@@ -274,7 +282,7 @@ export default function AboutPage() {
                   {item.degree}
                 </p>
                 <p className="font-[family-name:var(--font-inter)] text-[0.9rem] text-[#0a0a0a]/50 leading-relaxed max-w-md">
-                  Focused on human-computer interaction principles, user-centred design methods, and the research skills needed to understand people before solving for them.
+                  {item.summary}
                 </p>
               </div>
             </div>
