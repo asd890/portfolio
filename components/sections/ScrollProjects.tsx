@@ -8,16 +8,12 @@ import { projects } from "@/lib/projects";
 import { useNavColor } from "@/contexts/NavColorContext";
 import { getContrastColor, extractImageColor } from "@/lib/colorUtils";
 
-const SECTION_HEIGHT = 100; // vh per project slot
 const FALLBACK_ACCENT = "#888888";
 
 function useResolvedColors() {
   const [colors, setColors] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      projects.map((p) => [p.slug, p.accentColor ?? FALLBACK_ACCENT])
-    )
+    Object.fromEntries(projects.map((p) => [p.slug, p.accentColor ?? FALLBACK_ACCENT]))
   );
-
   useEffect(() => {
     projects.forEach((p) => {
       if (p.accentColor || !p.image) return;
@@ -26,7 +22,6 @@ function useResolvedColors() {
       );
     });
   }, []);
-
   return colors;
 }
 
@@ -42,15 +37,11 @@ function ProjectCard({
   onClick: () => void;
 }) {
   const isCurrent = position === 0;
-  const yPercent = position * 96;
-  const scale = isCurrent ? 1 : 0.88;
-  const opacity = isCurrent ? 1 : 0.55;
-
   return (
     <motion.div
       className={isCurrent ? "cursor-none group" : "pointer-events-none"}
       onClick={isCurrent ? onClick : undefined}
-      animate={{ y: `${yPercent}%`, scale, opacity }}
+      animate={{ y: `${position * 96}%`, scale: isCurrent ? 1 : 0.88, opacity: isCurrent ? 1 : 0.55 }}
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       style={{ position: "absolute", width: "100%", zIndex: isCurrent ? 10 : 5 }}
     >
@@ -81,31 +72,47 @@ function ProjectCard({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getLenis = () => (window as any).__lenis as { scrollTo: (target: number, opts?: Record<string, unknown>) => void } | undefined;
-
 export default function ScrollProjects() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const snapRefs = useRef<(HTMLDivElement | null)[]>([]);
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [expandingSlug, setExpandingSlug] = useState<string | null>(null);
-
   const activeIndexRef = useRef(0);
-  const isTransitioningRef = useRef(false);
 
   const resolvedColors = useResolvedColors();
   const { setAccentColor } = useNavColor();
 
-  // Keep accent colour in sync with active project
+  // Detect which project is in view using IntersectionObserver on the snap targets
   useEffect(() => {
-    const color = resolvedColors[projects[activeIndex].slug];
-    setAccentColor(color ?? null);
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const idx = Number((entry.target as HTMLElement).dataset.index);
+          if (isNaN(idx) || idx === activeIndexRef.current) return;
+          setDirection(idx > activeIndexRef.current ? 1 : -1);
+          activeIndexRef.current = idx;
+          setActiveIndex(idx);
+        });
+      },
+      { root: container, threshold: 0.5 }
+    );
+    snapRefs.current.forEach((ref) => { if (ref) observer.observe(ref); });
+    return () => observer.disconnect();
+  }, []);
+
+  // Accent colour
+  useEffect(() => {
+    setAccentColor(resolvedColors[projects[activeIndex].slug] ?? null);
   }, [activeIndex, resolvedColors, setAccentColor]);
 
-  // Clear accent when section is fully out of view
+  // Clear accent when section leaves viewport
   useEffect(() => {
-    const el = containerRef.current;
+    const el = document.getElementById("work");
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => { if (!entry.isIntersecting) setAccentColor(null); },
@@ -115,68 +122,6 @@ export default function ScrollProjects() {
     return () => observer.disconnect();
   }, [setAccentColor]);
 
-  const navigate = useCallback((dir: 1 | -1): boolean => {
-    if (isTransitioningRef.current) return false;
-    const curr = activeIndexRef.current;
-    const next = curr + dir;
-    if (next < 0 || next >= projects.length) return false;
-
-    isTransitioningRef.current = true;
-    activeIndexRef.current = next;
-    setDirection(dir);
-    setActiveIndex(next);
-
-    // Sync page scroll position only at the boundary projects so the sticky
-    // section can exit cleanly when the user scrolls past the first/last item.
-    const el = containerRef.current;
-    if (el) {
-      const maxScroll = el.offsetHeight - window.innerHeight;
-      if (next === projects.length - 1) {
-        // At last project — one more scroll down will exit the section
-        getLenis()?.scrollTo(el.offsetTop + maxScroll, { immediate: true });
-      } else if (next === 0) {
-        // At first project — one more scroll up will exit the section
-        getLenis()?.scrollTo(el.offsetTop, { immediate: true });
-      }
-    }
-
-    setTimeout(() => { isTransitioningRef.current = false; }, 600);
-    return true;
-  }, []);
-
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      const el = containerRef.current;
-      if (!el) return;
-
-      // Only intercept while the container spans the full viewport (sticky engaged)
-      const rect = el.getBoundingClientRect();
-      if (rect.top > 0 || rect.bottom < window.innerHeight) return;
-
-      const dir = (e.deltaY > 0 ? 1 : -1) as 1 | -1;
-      const curr = activeIndexRef.current;
-
-      // At boundaries let Lenis scroll the page naturally (section exits)
-      if (dir === -1 && curr === 0) return;
-      if (dir === 1 && curr === projects.length - 1) return;
-
-      // Stop the browser from scrolling the page
-      e.preventDefault();
-      // Tell Lenis not to process this event (it checks this flag explicitly)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (e as any).lenisStopPropagation = true;
-
-      // Navigate only when the previous transition has finished
-      if (!isTransitioningRef.current) {
-        navigate(dir);
-      }
-    };
-
-    // Capture phase — fires before Lenis's bubble-phase listener on <html>
-    window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
-    return () => window.removeEventListener("wheel", handleWheel, true);
-  }, [navigate]);
-
   const handleClick = useCallback(
     (slug: string) => {
       setExpandingSlug(slug);
@@ -185,42 +130,73 @@ export default function ScrollProjects() {
     [router]
   );
 
+  const scrollTo = useCallback((i: number) => {
+    scrollContainerRef.current?.scrollTo({ top: i * window.innerHeight, behavior: "smooth" });
+  }, []);
+
   const project = projects[activeIndex];
   const accent = resolvedColors[project.slug] ?? FALLBACK_ACCENT;
   const textColor = getContrastColor(accent);
-
   const prevProject = activeIndex > 0 ? projects[activeIndex - 1] : null;
   const nextProject = activeIndex < projects.length - 1 ? projects[activeIndex + 1] : null;
 
   const slideVariants = {
     enter: (d: number) => ({ y: d > 0 ? 50 : -50, opacity: 0 }),
-    center: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
-    },
-    exit: (d: number) => ({
-      y: d > 0 ? -35 : 35,
-      opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" as const },
-    }),
+    center: { y: 0, opacity: 1, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } },
+    exit: (d: number) => ({ y: d > 0 ? -35 : 35, opacity: 0, transition: { duration: 0.3, ease: "easeIn" as const } }),
   };
 
   return (
     <>
-      <div id="work" ref={containerRef} style={{ height: `${projects.length * SECTION_HEIGHT}vh` }} className="relative">
-        <div className="sticky top-0 h-screen z-10 overflow-hidden">
+      {/*
+        Outer section: 100 vh in page flow. data-lenis-prevent-wheel tells Lenis
+        to ignore wheel events here so the inner scroll container can own them.
+      */}
+      <section
+        id="work"
+        className="relative overflow-hidden"
+        style={{ height: "100vh" }}
+        data-lenis-prevent-wheel
+      >
+        {/*
+          Inner scroll container: scroll-snap-type + scroll-snap-stop:always
+          guarantees the browser stops at exactly one project per scroll gesture,
+          regardless of scroll speed. No JS timing needed.
+        */}
+        <div
+          ref={scrollContainerRef}
+          className="absolute inset-0 overflow-y-scroll"
+          style={{ scrollSnapType: "y mandatory" }}
+        >
+          {projects.map((_, i) => (
+            <div
+              key={i}
+              ref={(el) => { snapRefs.current[i] = el; }}
+              data-index={i}
+              style={{
+                height: "100vh",
+                scrollSnapAlign: "start",
+                scrollSnapStop: "always",
+              }}
+            />
+          ))}
+        </div>
+
+        {/*
+          Display layer: pointer-events:none so wheel events fall through to the
+          scroll container. Interactive children opt back in with pointer-events-auto.
+        */}
+        <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
 
           {/* Background */}
           <motion.div
-            className="absolute inset-0 z-0"
+            className="absolute inset-0"
             animate={{ backgroundColor: accent }}
             transition={{ duration: 0.7, ease: "easeInOut" }}
           />
 
           {/* Left — text */}
-          <div className="absolute bottom-0 left-0 right-0 h-[48%] md:h-auto md:inset-y-0 md:right-auto md:w-1/2 flex flex-col justify-center pl-5 pr-5 pb-10 md:pl-12 md:pr-8 md:pb-0 z-10">
-
+          <div className="pointer-events-auto absolute bottom-0 left-0 right-0 h-[48%] md:h-auto md:inset-y-0 md:right-auto md:w-1/2 flex flex-col justify-center pl-5 pr-5 pb-10 md:pl-12 md:pr-8 md:pb-0 z-10">
             <p className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase mb-6 md:mb-10" style={{ color: textColor + "60" }}>
               Selected Work —{" "}
               <motion.span key={activeIndex} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="inline-block">
@@ -231,28 +207,20 @@ export default function ScrollProjects() {
 
             <AnimatePresence mode="popLayout" custom={direction}>
               <motion.div key={project.slug} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit">
-
                 <div className="flex items-center gap-4 mb-4">
-                  <span className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase" style={{ color: textColor + "45" }}>
-                    {project.year}
-                  </span>
+                  <span className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase" style={{ color: textColor + "45" }}>{project.year}</span>
                   <span style={{ color: textColor + "25" }}>·</span>
-                  <span className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase" style={{ color: textColor + "60" }}>
-                    {project.category}
-                  </span>
+                  <span className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase" style={{ color: textColor + "60" }}>{project.category}</span>
                 </div>
-
                 <h2
                   className="font-[family-name:var(--font-playfair)] leading-[0.88] mb-6"
                   style={{ color: textColor, fontSize: "clamp(2.6rem, 5.5vw, 5.5rem)" }}
                 >
                   {project.title}
                 </h2>
-
                 <p className="hidden md:block font-[family-name:var(--font-inter)] text-base leading-relaxed mb-10 max-w-xs" style={{ color: textColor + "AA" }}>
                   {project.description}
                 </p>
-
                 <button
                   onClick={() => handleClick(project.slug)}
                   className="group flex items-center gap-3 font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase cursor-none"
@@ -269,14 +237,12 @@ export default function ScrollProjects() {
           {/* Right — cards */}
           <div className="absolute top-0 left-0 right-0 h-[55%] md:h-auto md:inset-y-0 md:left-auto md:right-0 md:w-1/2 flex items-center justify-center overflow-hidden">
             <div className="relative w-[88%] md:w-[90%]" style={{ aspectRatio: "4/3" }}>
-
               {prevProject && (
                 <ProjectCard key={`prev-${prevProject.slug}`} project={prevProject} resolvedAccent={resolvedColors[prevProject.slug] ?? FALLBACK_ACCENT} position={-1} onClick={() => {}} />
               )}
               {nextProject && (
                 <ProjectCard key={`next-${nextProject.slug}`} project={nextProject} resolvedAccent={resolvedColors[nextProject.slug] ?? FALLBACK_ACCENT} position={1} onClick={() => {}} />
               )}
-
               <AnimatePresence mode="popLayout" custom={direction}>
                 <motion.div
                   key={`current-${project.slug}`}
@@ -289,7 +255,7 @@ export default function ScrollProjects() {
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  className="absolute inset-0 cursor-none group"
+                  className="absolute inset-0 cursor-none group pointer-events-auto"
                   style={{ zIndex: 10 }}
                   data-cursor="view"
                   onClick={() => handleClick(project.slug)}
@@ -314,26 +280,12 @@ export default function ScrollProjects() {
           </div>
 
           {/* Dot nav */}
-          <div className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 flex-col gap-4 z-20">
+          <div className="hidden md:flex pointer-events-auto absolute right-6 top-1/2 -translate-y-1/2 flex-col gap-4 z-20">
             {projects.map((p, i) => (
               <button
                 key={p.slug}
                 aria-label={`Go to ${p.title}`}
-                onClick={() => {
-                  if (isTransitioningRef.current) return;
-                  const dir = (i > activeIndexRef.current ? 1 : -1) as 1 | -1;
-                  isTransitioningRef.current = true;
-                  activeIndexRef.current = i;
-                  setDirection(dir);
-                  setActiveIndex(i);
-                  const el = containerRef.current;
-                  if (el) {
-                    const maxScroll = el.offsetHeight - window.innerHeight;
-                    const targetY = el.offsetTop + maxScroll * (i / (projects.length - 1));
-                    getLenis()?.scrollTo(targetY, { immediate: true });
-                  }
-                  setTimeout(() => { isTransitioningRef.current = false; }, 600);
-                }}
+                onClick={() => scrollTo(i)}
                 className="flex items-center justify-center"
                 style={{ width: 20, height: 20 }}
               >
@@ -355,7 +307,7 @@ export default function ScrollProjects() {
             <motion.div className="h-full origin-left" style={{ backgroundColor: textColor + "50" }} animate={{ scaleX: (activeIndex + 1) / projects.length }} transition={{ duration: 0.5, ease: "easeOut" }} />
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Page transition wipe */}
       <AnimatePresence>
