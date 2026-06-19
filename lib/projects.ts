@@ -47,10 +47,10 @@ export const projects: Project[] = [
     team: "4 designers, 6 engineers",
     tools: ["Figma", "Protopie", "Maze", "Notion"],
     industry: "Social / Consumer",
-    // accentColor omitted — will be auto-extracted from the thumbnail
     accentColor: "#207ab7",
     image: "/projects/LBCThumb.jpg",
-    images: ["/projects/snacksnack-1.jpg", "/projects/snacksnack-2.jpg"],
+    heroImage: "/projects/lbcbanner2.jpg",
+    images: ["/projects/lbcbanner2.jpg", "/projects/lbcBanner2.png"],
     problem:
       "Friends lose touch not because they stop caring, but because digital communication feels performative. We needed to strip that away.",
     process: [
@@ -85,14 +85,14 @@ export const projects: Project[] = [
       },
       {
         type: "images",
-        srcs: ["/projects/LBCThumb.jpg", "/projects/LBCThumb.jpg"],
+        srcs: ["/projects/lbcBanner2.png", "/projects/LBCThumb.jpg"],
         caption: "Left: onboarding flow · Right: active trade view",
       },
     ],
   },
   {
     slug: "fintech-platform",
-    title: "Meridian",
+    title: "ListoBite",
     category: "Product Design / Fintech",
     description:
       "Building trust and transparency for a next-generation digital banking experience.",
@@ -104,8 +104,8 @@ export const projects: Project[] = [
     team: "3 designers, 10 engineers",
     tools: ["Figma", "FigJam", "UserTesting", "Amplitude"],
     industry: "Fintech / Banking",
-    accentColor: "#00D4C8",
-    image: "/projects/meridian.jpg",
+    accentColor: "#048b59",
+    image: "/projects/listobite.png",
     images: ["/projects/meridian-1.jpg", "/projects/meridian-2.jpg"],
     problem:
       "Traditional banking UX creates anxiety through opacity. Users don't trust what they can't understand.",
