@@ -10,6 +10,28 @@ const LABEL_MAP: Record<string, CursorLabel> = {
   open: "Open ↗",
 };
 
+function getBgColor(el: Element | null): string {
+  let node = el;
+  while (node && node !== document.documentElement) {
+    const bg = window.getComputedStyle(node as HTMLElement).backgroundColor;
+    if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") return bg;
+    node = node.parentElement;
+  }
+  return "rgb(245, 244, 240)"; // page default
+}
+
+function luminance(r: number, g: number, b: number) {
+  return [r, g, b]
+    .map(c => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; })
+    .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+}
+
+function isDarkBg(color: string): boolean {
+  const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (!m) return false;
+  return luminance(+m[1], +m[2], +m[3]) < 0.18;
+}
+
 export default function Cursor() {
   const mouseX = useMotionValue(-200);
   const mouseY = useMotionValue(-200);
@@ -18,11 +40,8 @@ export default function Cursor() {
   const [hovering, setHovering] = useState(false);
   const [dark, setDark] = useState(false);
 
-  // Dot tracks exactly
   const dotX = useSpring(mouseX, { stiffness: 1200, damping: 60 });
   const dotY = useSpring(mouseY, { stiffness: 1200, damping: 60 });
-
-  // Ring lags behind
   const ringX = useSpring(mouseX, { stiffness: 180, damping: 26 });
   const ringY = useSpring(mouseY, { stiffness: 180, damping: 26 });
 
@@ -36,17 +55,14 @@ export default function Cursor() {
 
       const cursorEl = target.closest("[data-cursor]") as HTMLElement | null;
       setLabel(cursorEl ? (LABEL_MAP[cursorEl.dataset.cursor ?? ""] ?? null) : null);
+      setHovering(!!target.closest("a, button, [data-cursor]"));
 
-      const clickable = target.closest("a, button, [data-cursor]");
-      setHovering(!!clickable);
-
-      // Switch to light cursor when over a dark-themed surface
-      const darkEl = target.closest("[data-cursor-theme='dark']");
-      setDark(!!darkEl);
+      // Auto-detect background brightness under the cursor
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      setDark(isDarkBg(getBgColor(el)));
     };
 
     const hide = () => setVisible(false);
-
     window.addEventListener("mousemove", move);
     document.documentElement.addEventListener("mouseleave", hide);
     return () => {
@@ -57,11 +73,11 @@ export default function Cursor() {
 
   const isLabel = label !== null;
   const dotColor = dark ? "#f5f4f0" : "#0a0a0a";
-  const ringColor = dark ? "rgba(245,244,240,0.5)" : "rgba(10,10,10,0.35)";
+  const ringBorder = dark ? "rgba(245,244,240,0.55)" : "rgba(10,10,10,0.35)";
 
   return (
     <>
-      {/* Dot — exact position, hidden when label is showing */}
+      {/* Dot */}
       <motion.div
         className="fixed top-0 left-0 z-[9999] pointer-events-none"
         style={{ x: dotX, y: dotY }}
@@ -75,7 +91,7 @@ export default function Cursor() {
         />
       </motion.div>
 
-      {/* Ring + label — lagged position */}
+      {/* Ring + label */}
       <motion.div
         className="fixed top-0 left-0 z-[9998] pointer-events-none"
         style={{ x: ringX, y: ringY }}
@@ -99,15 +115,15 @@ export default function Cursor() {
             <motion.div
               key="ring"
               initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1, borderColor: ringColor }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
               transition={{ duration: 0.25 }}
               className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border"
               style={{
                 width: hovering ? 52 : 36,
                 height: hovering ? 52 : 36,
-                borderColor: ringColor,
-                transition: "width 0.35s cubic-bezier(0.22,1,0.36,1), height 0.35s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease",
+                borderColor: ringBorder,
+                transition: "width 0.35s cubic-bezier(0.22,1,0.36,1), height 0.35s cubic-bezier(0.22,1,0.36,1), border-color 0.25s ease",
               }}
             />
           )}
