@@ -19,6 +19,10 @@ html {
   overflow-x: clip;
 }
 
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 html.lenis,
 html.lenis body {
   height: auto;
