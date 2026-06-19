@@ -309,7 +309,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
           whileInView="visible"
           viewport={{ once: true, margin: "-10%" }}
           variants={fadeUp}
-          className="font-[family-name:var(--font-playfair)] text-[clamp(1.6rem,3.5vw,3rem)] leading-[1.3] text-[#0a0a0a] max-w-4xl"
+          className="font-[family-name:var(--font-playfair)] text-[clamp(1.6rem,3.5vw,3rem)] leading-[1.3] text-[#0a0a0a] max-w-4xl whitespace-pre-line"
         >
           {project.problem}
         </motion.p>
