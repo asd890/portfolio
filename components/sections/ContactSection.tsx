@@ -26,8 +26,12 @@ export default function ContactSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, message }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Unknown error");
+      const text = await res.text();
+      let data: { ok?: boolean; error?: string } = {};
+      try { data = JSON.parse(text); } catch {
+        throw new Error(`Server returned unexpected response (${res.status}): ${text.slice(0, 120)}`);
+      }
+      if (!res.ok) throw new Error(data.error ?? `Request failed with status ${res.status}`);
       setStatus("sent");
       setName(""); setEmail(""); setMessage("");
     } catch (err) {
