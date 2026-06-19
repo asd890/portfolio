@@ -2,7 +2,7 @@ import Nav from "@/components/layout/Nav";
 import Hero from "@/components/sections/Hero";
 import ScrollProjects from "@/components/sections/ScrollProjects";
 import ProjectMarquee from "@/components/sections/ProjectMarquee";
-import WorkHistory from "@/components/sections/WorkHistory";
+import AboutCTA from "@/components/sections/AboutCTA";
 import ContactSection from "@/components/sections/ContactSection";
 import Footer from "@/components/sections/Footer";
 
@@ -13,7 +13,7 @@ export default function Home() {
       <Hero />
       <ProjectMarquee />
       <ScrollProjects />
-      <WorkHistory />
+      <AboutCTA />
       <ContactSection />
       <Footer />
     </main>
