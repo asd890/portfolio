@@ -264,8 +264,8 @@ export default function AboutPage() {
         </FadeUp>
 
         {education.map((item, i) => (
-          <FadeUp key={i} delay={0.08}>
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 md:gap-16">
+          <FadeUp key={i} delay={i * 0.08}>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 md:gap-16 py-12 border-b border-[#0a0a0a]/10 first:border-t first:border-[#0a0a0a]/10">
               <div>
                 <h3
                   className="font-[family-name:var(--font-playfair)] text-[#0a0a0a] leading-[0.9] mb-3"
