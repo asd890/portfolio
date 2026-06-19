@@ -44,7 +44,7 @@ export default function Nav({ showBack = false }: NavProps) {
       <div className="flex items-center gap-1">
         <Link
           href="/about"
-          className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase font-medium text-[#0a0a0a]/50 hover:text-[#0a0a0a] transition-colors px-4 py-1.5"
+          className="hidden sm:block font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase font-medium text-[#0a0a0a]/50 hover:text-[#0a0a0a] transition-colors px-4 py-1.5"
         >
           About
         </Link>
@@ -53,13 +53,13 @@ export default function Nav({ showBack = false }: NavProps) {
           target="_blank"
           rel="noopener noreferrer"
           data-cursor="open"
-          className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase font-medium text-[#0a0a0a]/50 hover:text-[#0a0a0a] transition-colors px-4 py-1.5"
+          className="hidden sm:block font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase font-medium text-[#0a0a0a]/50 hover:text-[#0a0a0a] transition-colors px-4 py-1.5"
         >
           Resume
         </a>
         <a
           href="mailto:admin@ahmednaik.com"
-          className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase font-medium text-white bg-[#0a0a0a] hover:bg-[#0a0a0a]/80 transition-colors px-5 py-2 rounded-full"
+          className="font-[family-name:var(--font-inter)] text-xs sm:text-sm tracking-widest uppercase font-medium text-white bg-[#0a0a0a] hover:bg-[#0a0a0a]/80 transition-colors px-4 sm:px-5 py-2 rounded-full"
         >
           Contact
         </a>

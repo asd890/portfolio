@@ -46,7 +46,7 @@ export default function Hero() {
   const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
-    <section ref={ref} className="relative min-h-screen flex flex-col justify-end pb-24 px-8 pt-32 overflow-hidden">
+    <section ref={ref} className="relative min-h-screen flex flex-col justify-end pb-16 md:pb-24 px-5 md:px-8 pt-32 overflow-hidden">
       {/* Background grain */}
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"

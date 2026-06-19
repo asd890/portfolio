@@ -19,8 +19,10 @@ export interface Project {
   industry: string;
   /** Hex color for the section background. Optional — auto-extracted from image if omitted. */
   accentColor?: string;
-  /** Path to the thumbnail image inside /public. Optional. */
+  /** Thumbnail shown on the homepage scroll section. */
   image?: string;
+  /** Full-bleed hero image for the project detail page. Falls back to `image` if omitted. */
+  heroImage?: string;
   images?: string[];
   problem: string;
   process: string[];

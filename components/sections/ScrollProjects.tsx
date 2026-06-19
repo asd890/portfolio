@@ -155,10 +155,10 @@ export default function ScrollProjects() {
           />
 
           {/* Left — text */}
-          <div className="absolute inset-y-0 left-0 w-1/2 flex flex-col justify-center pl-12 pr-8 z-10">
+          <div className="absolute bottom-0 left-0 right-0 h-[48%] md:h-auto md:inset-y-0 md:right-auto md:w-1/2 flex flex-col justify-center pl-5 pr-5 pb-10 md:pl-12 md:pr-8 md:pb-0 z-10">
 
             {/* Counter */}
-            <p className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase mb-10" style={{ color: textColor + "60" }}>
+            <p className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase mb-6 md:mb-10" style={{ color: textColor + "60" }}>
               Selected Work —{" "}
               <motion.span key={activeIndex} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="inline-block">
                 {String(activeIndex + 1).padStart(2, "0")}
@@ -187,7 +187,7 @@ export default function ScrollProjects() {
                   {project.title}
                 </h2>
 
-                <p className="font-[family-name:var(--font-inter)] text-base leading-relaxed mb-10 max-w-xs" style={{ color: textColor + "AA" }}>
+                <p className="hidden md:block font-[family-name:var(--font-inter)] text-base leading-relaxed mb-10 max-w-xs" style={{ color: textColor + "AA" }}>
                   {project.description}
                 </p>
 
@@ -205,8 +205,8 @@ export default function ScrollProjects() {
           </div>
 
           {/* Right — cards */}
-          <div className="absolute inset-y-0 right-0 w-1/2 flex items-center justify-center overflow-hidden">
-            <div className="relative" style={{ width: "90%", aspectRatio: "4/3" }}>
+          <div className="absolute top-0 left-0 right-0 h-[55%] md:h-auto md:inset-y-0 md:left-auto md:right-0 md:w-1/2 flex items-center justify-center overflow-hidden">
+            <div className="relative w-[88%] md:w-[90%]" style={{ aspectRatio: "4/3" }}>
 
               {prevProject && (
                 <ProjectCard key={`prev-${prevProject.slug}`} project={prevProject} resolvedAccent={resolvedColors[prevProject.slug] ?? FALLBACK_ACCENT} position={-1} onClick={() => {}} />
@@ -252,7 +252,7 @@ export default function ScrollProjects() {
           </div>
 
           {/* Dot nav */}
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-20">
+          <div className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 flex-col gap-4 z-20">
             {projects.map((p, i) => (
               <button
                 key={p.slug}

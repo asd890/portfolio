@@ -50,6 +50,11 @@ body {
   width: 0;
 }
 
+@media (pointer: coarse) {
+  * { cursor: auto !important; }
+  [data-cursor-ring], [data-cursor-dot] { display: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

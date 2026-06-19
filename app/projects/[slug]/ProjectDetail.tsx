@@ -14,7 +14,7 @@ function youtubeEmbedUrl(url: string): string | null {
 
 function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
   return (
-    <section className="px-8 py-24 max-w-6xl mx-auto space-y-20">
+    <section className="px-5 py-14 md:px-8 md:py-24 max-w-6xl mx-auto space-y-14 md:space-y-20">
       {blocks.map((block, i) => {
         if (block.type === "text") {
           return (
@@ -46,7 +46,7 @@ function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-10%" }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className={block.full ? "-mx-8" : ""}
+              className={block.full ? "-mx-5 md:-mx-8" : ""}
             >
               <div className="relative w-full overflow-hidden rounded-sm" style={{ aspectRatio: "16/9" }}>
                 <Image src={block.src} alt={block.caption ?? ""} fill className="object-cover" sizes="100vw" />
@@ -70,8 +70,7 @@ function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
               <div
-                className="grid gap-4"
-                style={{ gridTemplateColumns: `repeat(${block.srcs.length}, 1fr)` }}
+                className={`grid gap-3 grid-cols-1 ${block.srcs.length >= 2 ? "sm:grid-cols-2" : ""} ${block.srcs.length >= 3 ? "md:grid-cols-3" : ""}`}
               >
                 {block.srcs.map((src, j) => (
                   <div key={j} className="relative overflow-hidden rounded-sm" style={{ aspectRatio: "4/3" }}>
@@ -139,12 +138,14 @@ export default function ProjectDetail({ project }: { project: Project }) {
   const heroRef = useRef<HTMLDivElement>(null);
   const accent = project.accentColor ?? "#888888";
   const textColor = getContrastColor(accent);
+  const heroSrc = project.heroImage ?? project.image ?? null;
+
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
+  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const overlayOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
     <div
@@ -153,71 +154,99 @@ export default function ProjectDetail({ project }: { project: Project }) {
     >
       <Nav showBack />
 
-      {/* Hero */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col justify-center px-8 pt-32 pb-24 overflow-hidden">
+      {/* Hero — cinematic full-viewport */}
+      <section ref={heroRef} className="relative h-screen overflow-hidden">
+
+        {/* Background image with parallax */}
         <motion.div
+          className="absolute inset-0"
+          style={{ y: imageY, scale: 1.12, transformOrigin: "center" }}
+        >
+          {heroSrc ? (
+            <Image
+              src={heroSrc}
+              alt={project.title}
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+          ) : (
+            <div className="absolute inset-0" style={{ backgroundColor: accent }} />
+          )}
+        </motion.div>
+
+        {/* Curtain reveal — wipes upward on load */}
+        <motion.div
+          className="absolute inset-0 z-10 origin-bottom"
+          initial={{ scaleY: 1 }}
+          animate={{ scaleY: 0 }}
+          transition={{ duration: 1.1, ease: [0.76, 0, 0.24, 1] }}
+          style={{ backgroundColor: accent }}
+        />
+
+        {/* Gradient overlay — dark at bottom, light at top */}
+        <div
+          className="absolute inset-0 z-20 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.08) 100%)",
+          }}
+        />
+
+        {/* Bottom-left text */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 z-30 px-5 pb-8 md:px-10 md:pb-14"
           initial="hidden"
           animate="visible"
-          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-          className="relative z-10"
+          variants={{ visible: { transition: { staggerChildren: 0.12, delayChildren: 0.6 } } }}
         >
           <motion.p
             variants={fadeUp}
-            className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase text-[#0a0a0a]/30 mb-6"
+            className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase mb-4"
+            style={{ color: "rgba(255,255,255,0.45)" }}
           >
-            {project.category}
+            {project.category}&nbsp;&nbsp;·&nbsp;&nbsp;{project.year}
           </motion.p>
 
           <motion.h1
             variants={fadeUp}
-            className="font-[family-name:var(--font-playfair)] text-[clamp(4rem,10vw,11rem)] leading-[0.88] text-[#0a0a0a] mb-16 max-w-4xl"
+            className="font-[family-name:var(--font-playfair)] leading-[0.88]"
+            style={{
+              fontSize: "clamp(3.5rem,9vw,10rem)",
+              color: "#ffffff",
+            }}
           >
             {project.title}
           </motion.h1>
         </motion.div>
 
-        {/* Hero image */}
+        {/* Scroll cue */}
         <motion.div
-          className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-sm shadow-2xl"
-          style={{ aspectRatio: "16/10", y: imageY, scale: imageScale }}
+          className="hidden md:flex absolute bottom-10 right-10 z-30 items-center gap-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
+          style={{ opacity: overlayOpacity }}
         >
-          <motion.div
-            initial={{ scaleY: 1, originY: 0 }}
-            animate={{ scaleY: 0 }}
-            transition={{ duration: 0.9, delay: 0.2, ease: [0.76, 0, 0.24, 1] }}
-            className="absolute inset-0 z-10 origin-top"
-            style={{ backgroundColor: accent }}
-          />
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{ backgroundColor: accent + "33" }}
+          <span
+            className="font-[family-name:var(--font-inter)] text-[10px] tracking-widest uppercase"
+            style={{ color: "rgba(255,255,255,0.4)" }}
           >
-            <span
-              className="font-[family-name:var(--font-playfair)] italic select-none"
-              style={{
-                fontSize: "clamp(5rem,15vw,14rem)",
-                color: accent + "66",
-              }}
-            >
-              {project.title[0]}
-            </span>
-          </div>
+            Scroll
+          </span>
+          <motion.span
+            animate={{ y: [0, 5, 0] }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+            style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}
+          >
+            ↓
+          </motion.span>
         </motion.div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-8 h-8 rounded-full border border-[#0a0a0a]/20 flex items-center justify-center"
-          >
-            <span className="text-[#0a0a0a]/40 text-xs">↓</span>
-          </motion.div>
-        </div>
       </section>
 
       {/* Overview */}
-      <section className="px-8 py-24 grid grid-cols-1 md:grid-cols-2 gap-16 max-w-6xl mx-auto">
+      <section className="px-5 py-14 md:px-8 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 max-w-6xl mx-auto">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -260,12 +289,12 @@ export default function ProjectDetail({ project }: { project: Project }) {
       </section>
 
       {/* Divider */}
-      <div className="px-8">
+      <div className="px-5 md:px-8">
         <div className="border-t border-[#0a0a0a]/10" />
       </div>
 
       {/* Problem */}
-      <section className="px-8 py-24 max-w-6xl mx-auto">
+      <section className="px-5 py-14 md:px-8 md:py-24 max-w-6xl mx-auto">
         <motion.p
           initial="hidden"
           whileInView="visible"
@@ -287,7 +316,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
       </section>
 
       {/* Process */}
-      <section className="px-8 py-24 max-w-6xl mx-auto">
+      <section className="px-5 py-14 md:px-8 md:py-24 max-w-6xl mx-auto">
         <motion.p
           initial="hidden"
           whileInView="visible"
@@ -328,7 +357,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
 
       {/* Solution — full bleed color */}
       <section
-        className="px-8 py-32"
+        className="px-5 py-20 md:px-8 md:py-32"
         style={{ backgroundColor: accent }}
       >
         <div className="max-w-6xl mx-auto">
@@ -356,7 +385,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
       </section>
 
       {/* Outcomes */}
-      <section className="px-8 py-24 max-w-6xl mx-auto">
+      <section className="px-5 py-14 md:px-8 md:py-24 max-w-6xl mx-auto">
         <motion.p
           initial="hidden"
           whileInView="visible"
@@ -393,7 +422,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
       </section>
 
       {/* Next project prompt */}
-      <div className="px-8 py-16 border-t border-[#0a0a0a]/10 text-center">
+      <div className="px-5 py-12 md:px-8 md:py-16 border-t border-[#0a0a0a]/10 text-center">
         <p className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase text-[#0a0a0a]/30 mb-4">
           Next
         </p>
