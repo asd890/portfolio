@@ -51,10 +51,7 @@ export const projects: Project[] = [
     image: "/projects/LBCThumb.jpg",
     heroImage: "/projects/lbcbanner2.jpg",
     images: ["/projects/lbcbanner2.jpg", "/projects/lbcBanner2.png"],
-    problem:[
-      "Friends lose touch not because they stop caring, but because digital communication feels performative. \n" ,
-      "We needed to strip that away.",
-    ],
+    problem: "Friends lose touch not because they stop caring, but because digital communication feels performative. We needed to strip that away.",
     process: [
       "Conducted 24 qualitative interviews across three age groups",
       "Mapped communication patterns and friction points",
