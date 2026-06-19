@@ -114,7 +114,10 @@ export default function ScrollProjects() {
       const t = projects.length > 1 ? next / (projects.length - 1) : 0;
       getLenis()?.scrollTo(el.offsetTop + t * maxScroll, { immediate: true });
     }
-    setTimeout(() => { lockedRef.current = false; }, 900);
+    // Use a longer hold at the first / last project so inertia from the
+    // last gesture has time to die before the section exits.
+    const atBoundary = next === 0 || next === projects.length - 1;
+    setTimeout(() => { lockedRef.current = false; }, atBoundary ? 1300 : 900);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -128,9 +131,24 @@ export default function ScrollProjects() {
       const dir = e.deltaY > 0 ? 1 : -1;
       const curr = activeIndexRef.current;
 
-      // At boundaries let Lenis scroll the page out naturally
-      if (dir === -1 && curr === 0) return;
-      if (dir === 1 && curr === projects.length - 1) return;
+      // At the boundary in the exit direction: hold while locked (inertia from
+      // the previous navigate is still decaying), then release for Lenis to exit.
+      if (dir === -1 && curr === 0) {
+        if (lockedRef.current) {
+          e.preventDefault();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (e as any).lenisStopPropagation = true;
+        }
+        return;
+      }
+      if (dir === 1 && curr === projects.length - 1) {
+        if (lockedRef.current) {
+          e.preventDefault();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (e as any).lenisStopPropagation = true;
+        }
+        return;
+      }
 
       e.preventDefault();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
