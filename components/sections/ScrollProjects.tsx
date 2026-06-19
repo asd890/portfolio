@@ -315,10 +315,17 @@ export default function ScrollProjects() {
 
             <button
               onClick={() => setOverlayOpen(true)}
-              className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase self-start border-b pb-px transition-opacity duration-200 hover:opacity-60 cursor-none"
-              style={{ color: textColor + "70", borderColor: textColor + "30" }}
+              className="group self-start flex items-center gap-3 font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase border rounded-full px-6 py-3 transition-all duration-300 cursor-none"
+              style={{
+                color: textColor,
+                borderColor: textColor + "40",
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = textColor; (e.currentTarget as HTMLButtonElement).style.color = accent; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = textColor; }}
             >
-              View all projects
+              <span>View all projects</span>
+              <span className="transition-transform duration-300 group-hover:translate-x-1 text-base leading-none">&rarr;</span>
             </button>
           </div>
 
