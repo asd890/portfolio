@@ -231,23 +231,6 @@ export default function ScrollProjects() {
         <div className="relative z-10 flex h-full">
           {/* Left panel */}
           <div className="flex flex-col justify-center w-full md:w-[40%] pl-5 pr-5 pb-10 pt-10 md:pl-12 md:pr-8 md:pb-0 md:pt-0">
-            <p
-              className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase mb-10"
-              style={{ color: textColor + "60" }}
-            >
-              Selected Work &mdash;{" "}
-              <motion.span
-                key={activeIndex}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="inline-block"
-              >
-                {String(activeIndex + 1).padStart(2, "0")}
-              </motion.span>
-              {" "}/ {String(projects.length).padStart(2, "0")}
-            </p>
-
             <AnimatePresence mode="popLayout" custom={direction}>
               <motion.div
                 key={project.slug}
@@ -456,48 +439,67 @@ export default function ScrollProjects() {
           </div>
         </div>
 
-        {/* Dot nav */}
-        <div className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 flex-col gap-4 z-20">
-          {projects.map((p, i) => (
-            <button
-              key={p.slug}
-              aria-label={`Go to ${p.title}`}
-              onClick={() => {
-                if (lockedRef.current) return;
-                const dir = i > activeIndexRef.current ? 1 : -1;
-                lockedRef.current = true;
-                activeIndexRef.current = i;
-                setDirection(dir);
-                setActiveIndex(i);
-                setTimeout(() => { lockedRef.current = false; }, 350);
-              }}
-              className="flex items-center justify-center cursor-none"
-              style={{ width: 20, height: 20 }}
+        {/* Bottom bar — counter + dot nav + progress */}
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <div className="flex items-center gap-4 px-5 md:px-12 pb-5">
+            {/* Counter */}
+            <span
+              className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase tabular-nums"
+              style={{ color: textColor + "60" }}
             >
               <motion.span
-                className="block rounded-full"
-                animate={{
-                  width: i === activeIndex ? 8 : 4,
-                  height: i === activeIndex ? 8 : 4,
-                  backgroundColor: i === activeIndex ? textColor : textColor + "40",
-                }}
-                transition={{ duration: 0.3 }}
-              />
-            </button>
-          ))}
-        </div>
+                key={activeIndex}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="inline-block"
+              >
+                {String(activeIndex + 1).padStart(2, "0")}
+              </motion.span>
+              {" / "}{String(projects.length).padStart(2, "0")}
+            </span>
 
-        {/* Progress bar */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-[1px] z-20"
-          style={{ backgroundColor: textColor + "20" }}
-        >
-          <motion.div
-            className="h-full origin-left"
-            style={{ backgroundColor: textColor + "50" }}
-            animate={{ scaleX: (activeIndex + 1) / projects.length }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          />
+            {/* Horizontal dots */}
+            <div className="flex items-center gap-3">
+              {projects.map((p, i) => (
+                <button
+                  key={p.slug}
+                  aria-label={`Go to ${p.title}`}
+                  onClick={() => {
+                    if (lockedRef.current) return;
+                    const dir = i > activeIndexRef.current ? 1 : -1;
+                    lockedRef.current = true;
+                    activeIndexRef.current = i;
+                    setDirection(dir);
+                    setActiveIndex(i);
+                    setTimeout(() => { lockedRef.current = false; }, 350);
+                  }}
+                  className="flex items-center justify-center cursor-none"
+                  style={{ width: 16, height: 16 }}
+                >
+                  <motion.span
+                    className="block rounded-full"
+                    animate={{
+                      width: i === activeIndex ? 16 : 4,
+                      height: 4,
+                      backgroundColor: i === activeIndex ? textColor : textColor + "40",
+                    }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Progress line */}
+          <div className="h-[1px] w-full" style={{ backgroundColor: textColor + "20" }}>
+            <motion.div
+              className="h-full origin-left"
+              style={{ backgroundColor: textColor + "50" }}
+              animate={{ scaleX: (activeIndex + 1) / projects.length }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+          </div>
         </div>
       </section>
       </div>

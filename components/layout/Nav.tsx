@@ -29,6 +29,15 @@ export default function Nav({ showBack = false }: NavProps) {
       {/* Left — name / back */}
       <Link
         href="/"
+        onClick={(e) => {
+          if (pathname === "/" && !showBack) {
+            e.preventDefault();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const lenis = (window as any).__lenis;
+            if (lenis) lenis.scrollTo(0, { duration: 1.2 });
+            else window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        }}
         className="font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase font-medium text-[#0a0a0a] hover:opacity-50 transition-opacity"
       >
         {showBack ? (
