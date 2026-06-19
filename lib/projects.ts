@@ -24,7 +24,7 @@ export interface Project {
   /** Full-bleed hero image for the project detail page. Falls back to `image` if omitted. */
   heroImage?: string;
   images?: string[];
-  problem: string[];
+  problem: string;
   process: string[];
   solution: string;
   outcomes: { metric: string; value: string }[];
