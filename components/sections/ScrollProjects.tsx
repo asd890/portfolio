@@ -93,8 +93,6 @@ export default function ScrollProjects() {
 
   const activeIndexRef = useRef(0);
   const isTransitioningRef = useRef(false);
-  const gestureNavigatedRef = useRef(false);
-  const gestureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const resolvedColors = useResolvedColors();
   const { setAccentColor } = useNavColor();
@@ -168,24 +166,15 @@ export default function ScrollProjects() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (e as any).lenisStopPropagation = true;
 
-      // Reset gesture flag ~200 ms after the last wheel tick
-      if (gestureTimerRef.current) clearTimeout(gestureTimerRef.current);
-      gestureTimerRef.current = setTimeout(() => {
-        gestureNavigatedRef.current = false;
-      }, 200);
-
-      // One project change per gesture
-      if (gestureNavigatedRef.current) return;
-      gestureNavigatedRef.current = true;
-      navigate(dir);
+      // Navigate only when the previous transition has finished
+      if (!isTransitioningRef.current) {
+        navigate(dir);
+      }
     };
 
     // Capture phase — fires before Lenis's bubble-phase listener on <html>
     window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
-    return () => {
-      window.removeEventListener("wheel", handleWheel, true);
-      if (gestureTimerRef.current) clearTimeout(gestureTimerRef.current);
-    };
+    return () => window.removeEventListener("wheel", handleWheel, true);
   }, [navigate]);
 
   const handleClick = useCallback(
