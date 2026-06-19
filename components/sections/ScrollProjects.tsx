@@ -74,6 +74,7 @@ export default function ScrollProjects() {
   const lockedRef = useRef(false);
   const entryLockRef = useRef(false);
   const sectionWasInViewRef = useRef(false);
+  const overlayOpenRef = useRef(false);
 
   const resolvedColors = useResolvedColors();
   const { setAccentColor } = useNavColor();
@@ -122,6 +123,9 @@ export default function ScrollProjects() {
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
+      // Let the overlay scroll freely
+      if (overlayOpenRef.current) return;
+
       const el = sectionRef.current;
       if (!el) return;
       // Only act while the sticky panel fills the viewport
@@ -188,6 +192,10 @@ export default function ScrollProjects() {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [navigate]);
+
+  useEffect(() => {
+    overlayOpenRef.current = overlayOpen;
+  }, [overlayOpen]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -542,6 +550,7 @@ export default function ScrollProjects() {
         {overlayOpen && (
           <motion.div
             className="fixed inset-0 z-[200] overflow-y-auto"
+            data-lenis-prevent
             style={{ backgroundColor: "#0a0a0a" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
