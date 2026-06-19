@@ -70,7 +70,19 @@ export default function Nav({ showBack = false }: NavProps) {
           Work
         </a>
         <a
-          href="mailto:admin@ahmednaik.com"
+          href={pathname === "/" ? "#contact" : "/#contact"}
+          onClick={(e) => {
+            if (pathname === "/") {
+              e.preventDefault();
+              const el = document.getElementById("contact");
+              if (el) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const lenis = (window as any).__lenis;
+                if (lenis) lenis.scrollTo(el, { offset: 0, duration: 1.2 });
+                else el.scrollIntoView({ behavior: "smooth" });
+              }
+            }
+          }}
           className="font-[family-name:var(--font-inter)] text-xs sm:text-sm tracking-widest uppercase font-medium text-white bg-[#0a0a0a] hover:bg-[#0a0a0a]/80 transition-colors px-4 sm:px-5 py-2 rounded-full"
         >
           Contact
