@@ -72,6 +72,7 @@ export default function ScrollProjects() {
 
   const activeIndexRef = useRef(0);
   const lockedRef = useRef(false);
+  const entryLockRef = useRef(false);
   // sectionRef is also the 500vh container — getBoundingClientRect on it
   // tells us whether the sticky panel currently fills the viewport.
 
@@ -90,9 +91,19 @@ export default function ScrollProjects() {
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
+    let wasIntersecting = false;
     const obs = new IntersectionObserver(
-      ([e]) => { if (!e.isIntersecting) setAccentColor(null); },
-      { threshold: 0 }
+      ([e]) => {
+        if (e.isIntersecting && !wasIntersecting) {
+          // Section just came into view — Lenis still has residual momentum.
+          // Block navigation for 1 s so that momentum doesn't skip project 0.
+          entryLockRef.current = true;
+          setTimeout(() => { entryLockRef.current = false; }, 1000);
+        }
+        wasIntersecting = e.isIntersecting;
+        if (!e.isIntersecting) setAccentColor(null);
+      },
+      { threshold: 0.5 }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -130,6 +141,14 @@ export default function ScrollProjects() {
 
       const dir = e.deltaY > 0 ? 1 : -1;
       const curr = activeIndexRef.current;
+
+      // Absorb Lenis arrival momentum — don't navigate yet, just hold the page.
+      if (entryLockRef.current) {
+        e.preventDefault();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (e as any).lenisStopPropagation = true;
+        return;
+      }
 
       // At the boundary in the exit direction: hold while locked (inertia from
       // the previous navigate is still decaying), then release for Lenis to exit.
