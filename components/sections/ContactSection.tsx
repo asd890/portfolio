@@ -87,7 +87,7 @@ export default function ContactSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
-              className="font-[family-name:var(--font-mono)] text-[clamp(1rem,3.2vw,3.2rem)] leading-none tracking-tight text-[#f5f4f0] group-hover:text-[#0a0a0a] transition-colors duration-500"
+              className="font-[family-name:var(--font-inter)] font-light text-[clamp(1.2rem,3.5vw,3.5rem)] leading-none tracking-tight text-[#f5f4f0] group-hover:text-[#0a0a0a] transition-colors duration-500"
             >
               {copied ? "Copied ✓" : "admin@ahmednaik.com"}
             </motion.span>

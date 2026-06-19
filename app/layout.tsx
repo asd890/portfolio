@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Space_Mono } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import SmoothScrollProvider from "@/components/layout/SmoothScrollProvider";
 import Cursor from "@/components/ui/Cursor";
@@ -18,11 +18,6 @@ const inter = Inter({
   weight: ["300", "400", "500", "600"],
 });
 
-const spaceMono = Space_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Portfolio — UX/UI Designer",
@@ -34,7 +29,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
       <body>
         <NavColorProvider>
           <SmoothScrollProvider>
