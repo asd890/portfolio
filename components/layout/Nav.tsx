@@ -49,13 +49,16 @@ export default function Nav({ showBack = false }: NavProps) {
           About
         </Link>
         <a
-          href="/resume.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-cursor="open"
+          href={pathname === "/" ? "#work" : "/#work"}
+          onClick={(e) => {
+            if (pathname === "/") {
+              e.preventDefault();
+              document.getElementById("work")?.scrollIntoView({ behavior: "smooth" });
+            }
+          }}
           className="hidden sm:block font-[family-name:var(--font-inter)] text-sm tracking-widest uppercase font-medium text-[#0a0a0a]/50 hover:text-[#0a0a0a] transition-colors px-4 py-1.5"
         >
-          Resume
+          Work
         </a>
         <a
           href="mailto:admin@ahmednaik.com"

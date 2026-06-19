@@ -1,12 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useMotionValueEvent,
-} from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { projects } from "@/lib/projects";
@@ -94,24 +89,101 @@ export default function ScrollProjects() {
   const [direction, setDirection] = useState<1 | -1>(1);
   const [expandingSlug, setExpandingSlug] = useState<string | null>(null);
 
+  const activeIndexRef = useRef(0);
+  const isTransitioningRef = useRef(false);
+  const gestureNavigatedRef = useRef(false);
+  const gestureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const resolvedColors = useResolvedColors();
   const { setAccentColor } = useNavColor();
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  // Sync accent colour whenever the active project changes
+  useEffect(() => {
+    const color = resolvedColors[projects[activeIndex].slug];
+    setAccentColor(color ?? null);
+  }, [activeIndex, resolvedColors, setAccentColor]);
 
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    const idx = Math.min(Math.floor(v * projects.length), projects.length - 1);
-    setDirection(idx > activeIndex ? 1 : -1);
-    setActiveIndex(idx);
-    if (v > 0 && v < 1) {
-      setAccentColor(resolvedColors[projects[idx].slug] ?? null);
-    } else {
-      setAccentColor(null);
+  // Clear accent when the section leaves the viewport
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (!entry.isIntersecting) setAccentColor(null); },
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [setAccentColor]);
+
+  /** Move to the adjacent project in direction dir. Returns false if already at boundary. */
+  const navigate = useCallback((dir: 1 | -1): boolean => {
+    if (isTransitioningRef.current) return false;
+    const curr = activeIndexRef.current;
+    const next = curr + dir;
+    if (next < 0 || next >= projects.length) return false;
+
+    isTransitioningRef.current = true;
+    activeIndexRef.current = next;
+    setDirection(dir);
+    setActiveIndex(next);
+
+    // Advance the real scroll position so the sticky section exits correctly at boundaries
+    const el = containerRef.current;
+    if (el) {
+      const maxScroll = el.offsetHeight - window.innerHeight;
+      const targetY = el.offsetTop + maxScroll * (next / (projects.length - 1));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const lenis = (window as any).__lenis;
+      if (lenis) {
+        lenis.scrollTo(targetY, { immediate: true });
+      } else {
+        window.scrollTo(0, targetY);
+      }
     }
-  });
+
+    setTimeout(() => { isTransitioningRef.current = false; }, 600);
+    return true;
+  }, []);
+
+  // Wheel interception — capture phase fires before Lenis's bubble listener
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      const el = containerRef.current;
+      if (!el) return;
+
+      // Only active when the container spans the viewport (sticky is engaged)
+      const rect = el.getBoundingClientRect();
+      if (rect.top > 0 || rect.bottom < window.innerHeight) return;
+
+      const dir = (e.deltaY > 0 ? 1 : -1) as 1 | -1;
+      const curr = activeIndexRef.current;
+
+      // At edges: let Lenis scroll the page past this section
+      if (dir === -1 && curr === 0) return;
+      if (dir === 1 && curr === projects.length - 1) return;
+
+      // Prevent Lenis + browser from scrolling the page while inside the section
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Track gesture: reset "navigated" flag ~150ms after the last wheel event
+      if (gestureTimerRef.current) clearTimeout(gestureTimerRef.current);
+      gestureTimerRef.current = setTimeout(() => {
+        gestureNavigatedRef.current = false;
+      }, 150);
+
+      // One navigation per gesture
+      if (gestureNavigatedRef.current) return;
+      gestureNavigatedRef.current = true;
+      navigate(dir);
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
+    return () => {
+      window.removeEventListener("wheel", handleWheel, true);
+      if (gestureTimerRef.current) clearTimeout(gestureTimerRef.current);
+    };
+  }, [navigate]);
 
   const handleClick = useCallback(
     (slug: string) => {
@@ -144,7 +216,7 @@ export default function ScrollProjects() {
 
   return (
     <>
-      <div ref={containerRef} style={{ height: `${projects.length * SECTION_HEIGHT}vh` }} className="relative">
+      <div id="work" ref={containerRef} style={{ height: `${projects.length * SECTION_HEIGHT}vh` }} className="relative">
         <div className="sticky top-0 h-screen z-10 overflow-hidden">
 
           {/* Background */}
@@ -258,10 +330,22 @@ export default function ScrollProjects() {
                 key={p.slug}
                 aria-label={`Go to ${p.title}`}
                 onClick={() => {
-                  if (!containerRef.current) return;
-                  const top = containerRef.current.offsetTop;
-                  const segH = containerRef.current.offsetHeight / projects.length;
-                  window.scrollTo({ top: top + segH * i + segH * 0.5, behavior: "smooth" });
+                  if (isTransitioningRef.current) return;
+                  const dir = (i > activeIndexRef.current ? 1 : -1) as 1 | -1;
+                  isTransitioningRef.current = true;
+                  activeIndexRef.current = i;
+                  setDirection(dir);
+                  setActiveIndex(i);
+                  const el = containerRef.current;
+                  if (el) {
+                    const maxScroll = el.offsetHeight - window.innerHeight;
+                    const targetY = el.offsetTop + maxScroll * (i / (projects.length - 1));
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const lenis = (window as any).__lenis;
+                    if (lenis) lenis.scrollTo(targetY, { immediate: true });
+                    else window.scrollTo(0, targetY);
+                  }
+                  setTimeout(() => { isTransitioningRef.current = false; }, 600);
                 }}
                 className="flex items-center justify-center"
                 style={{ width: 20, height: 20 }}

@@ -20,6 +20,8 @@ export default function SmoothScrollProvider({
     });
 
     lenisRef.current = lenis;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__lenis = lenis;
 
     function raf(time: number) {
       lenis.raf(time);
@@ -31,6 +33,8 @@ export default function SmoothScrollProvider({
     return () => {
       cancelAnimationFrame(rafId);
       lenis.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).__lenis;
     };
   }, []);
 
