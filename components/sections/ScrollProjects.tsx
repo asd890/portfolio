@@ -63,7 +63,7 @@ const textVariants = {
 };
 
 export default function ScrollProjects() {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -72,10 +72,16 @@ export default function ScrollProjects() {
 
   const activeIndexRef = useRef(0);
   const lockedRef = useRef(false);
-  const inViewRef = useRef(false);
+  // sectionRef is also the 500vh container — getBoundingClientRect on it
+  // tells us whether the sticky panel currently fills the viewport.
 
   const resolvedColors = useResolvedColors();
   const { setAccentColor } = useNavColor();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getLenis = () => (window as any).__lenis as
+    | { scrollTo: (target: number, opts?: Record<string, unknown>) => void }
+    | undefined;
 
   useEffect(() => {
     setAccentColor(resolvedColors[projects[activeIndex].slug] ?? null);
@@ -85,11 +91,8 @@ export default function ScrollProjects() {
     const el = sectionRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([e]) => {
-        inViewRef.current = e.isIntersecting;
-        if (!e.isIntersecting) setAccentColor(null);
-      },
-      { threshold: 0.3 }
+      ([e]) => { if (!e.isIntersecting) setAccentColor(null); },
+      { threshold: 0 }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -103,18 +106,36 @@ export default function ScrollProjects() {
     activeIndexRef.current = next;
     setDirection(dir);
     setActiveIndex(next);
-    setTimeout(() => { lockedRef.current = false; }, 350);
-  }, []);
+    // Keep Lenis position proportional to the active index so the section
+    // exits cleanly with one scroll at the first / last project.
+    const el = sectionRef.current;
+    if (el) {
+      const maxScroll = el.offsetHeight - window.innerHeight;
+      const t = projects.length > 1 ? next / (projects.length - 1) : 0;
+      getLenis()?.scrollTo(el.offsetTop + t * maxScroll, { immediate: true });
+    }
+    setTimeout(() => { lockedRef.current = false; }, 420);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      if (!inViewRef.current) return;
-      const absDeltaX = Math.abs(e.deltaX);
-      const absDeltaY = Math.abs(e.deltaY);
-      if (absDeltaX <= 15 || absDeltaY > absDeltaX) return;
+      const el = sectionRef.current;
+      if (!el) return;
+      // Only act while the sticky panel fills the viewport
+      const { top, bottom } = el.getBoundingClientRect();
+      if (top > 1 || bottom < window.innerHeight - 1) return;
+
+      const dir = e.deltaY > 0 ? 1 : -1;
+      const curr = activeIndexRef.current;
+
+      // At boundaries let Lenis scroll the page out naturally
+      if (dir === -1 && curr === 0) return;
+      if (dir === 1 && curr === projects.length - 1) return;
+
       e.preventDefault();
-      const dir = e.deltaX > 0 ? 1 : -1;
-      navigate(dir as 1 | -1);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (e as any).lenisStopPropagation = true;
+      navigate(dir);
     };
     window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
     return () => window.removeEventListener("wheel", handleWheel, true);
@@ -122,7 +143,6 @@ export default function ScrollProjects() {
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (!inViewRef.current) return;
       if (e.key === "ArrowRight") navigate(1);
       if (e.key === "ArrowLeft") navigate(-1);
     };
@@ -151,11 +171,17 @@ export default function ScrollProjects() {
 
   return (
     <>
-      <section
+      {/* 500vh container: page scrolls through its full height while the inner
+          panel stays sticky. Vertical scroll drives the project index via the
+          wheel handler; card transitions play horizontally. */}
+      <div
         id="work"
         ref={sectionRef}
+        style={{ height: `${projects.length * 100}vh`, position: "relative" }}
+      >
+      <section
         className="relative overflow-hidden"
-        style={{ height: "100vh" }}
+        style={{ position: "sticky", top: 0, height: "100vh" }}
       >
         <motion.div
           className="absolute inset-0"
@@ -435,6 +461,7 @@ export default function ScrollProjects() {
           />
         </div>
       </section>
+      </div>
 
       {/* View all overlay */}
       <AnimatePresence>
