@@ -9,6 +9,10 @@ import { useNavColor } from "@/contexts/NavColorContext";
 import { getContrastColor, extractImageColor } from "@/lib/colorUtils";
 
 const FALLBACK_ACCENT = "#888888";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getLenis = () => (window as any).__lenis as
+  | { scrollTo: (target: number, opts?: Record<string, unknown>) => void }
+  | undefined;
 
 function useResolvedColors() {
   const [colors, setColors] = useState<Record<string, string>>(() =>
@@ -26,108 +30,104 @@ function useResolvedColors() {
 }
 
 export default function ScrollProjects() {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [expandingSlug, setExpandingSlug] = useState<string | null>(null);
+
   const activeIndexRef = useRef(0);
+  const lockedRef = useRef(false);
 
   const resolvedColors = useResolvedColors();
   const { setAccentColor } = useNavColor();
 
-  // Drive project from scroll position.
-  // scroll-snap-stop:always guarantees scrollTop is always a clean multiple of vh.
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const onScroll = () => {
-      const idx = Math.min(
-        Math.round(container.scrollTop / window.innerHeight),
-        projects.length - 1
-      );
-      if (idx === activeIndexRef.current) return;
-      setDirection(idx > activeIndexRef.current ? 1 : -1);
-      activeIndexRef.current = idx;
-      setActiveIndex(idx);
-    };
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => container.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Capture-phase wheel listener.
-  //
-  // Problem: without this, Lenis (bubble phase on <html>) processes every wheel
-  // event over the scroll container. Lenis adds delta to its targetScroll and
-  // its RAF loop then calls window.scrollTo() each frame — which undoes any
-  // native page-scroll that CSS snap chaining would produce, leaving the user
-  // stuck inside the section.
-  //
-  // Fix: set event.lenisStopPropagation when the container is NOT at a boundary.
-  // Lenis checks this flag and returns early (no targetScroll update, no
-  // window.scrollTo override). The browser handles the event natively, CSS snap
-  // fires, and the container advances one project.
-  //
-  // At a boundary (first project scrolling up / last scrolling down) we do
-  // nothing, so Lenis sees the event normally, scrolls the page, and the section
-  // exits cleanly.
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      const container = scrollContainerRef.current;
-      if (!container) return;
-
-      // Only act when the section is pinned to the viewport
-      const rect = container.getBoundingClientRect();
-      if (rect.top > 1 || rect.bottom < window.innerHeight - 1) return;
-
-      const dir = e.deltaY > 0 ? 1 : -1;
-      const atTop = container.scrollTop <= 1;
-      const atBottom =
-        container.scrollTop >= container.scrollHeight - container.clientHeight - 1;
-
-      // At boundary in the exit direction → let Lenis scroll the page out
-      if (dir < 0 && atTop) return;
-      if (dir > 0 && atBottom) return;
-
-      // Not at boundary → tell Lenis to skip so CSS snap can drive the container
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (e as any).lenisStopPropagation = true;
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: true, capture: true });
-    return () => window.removeEventListener("wheel", handleWheel, true);
-  }, []);
-
-  // Accent colour
+  // Keep accent in sync
   useEffect(() => {
     setAccentColor(resolvedColors[projects[activeIndex].slug] ?? null);
   }, [activeIndex, resolvedColors, setAccentColor]);
 
-  // Clear accent when section leaves the page viewport
   useEffect(() => {
     const el = document.getElementById("work");
     if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (!entry.isIntersecting) setAccentColor(null); },
+    const obs = new IntersectionObserver(
+      ([e]) => { if (!e.isIntersecting) setAccentColor(null); },
       { threshold: 0 }
     );
-    observer.observe(el);
-    return () => observer.disconnect();
+    obs.observe(el);
+    return () => obs.disconnect();
   }, [setAccentColor]);
 
-  const handleClick = useCallback(
-    (slug: string) => {
-      setExpandingSlug(slug);
-      setTimeout(() => router.push(`/projects/${slug}`), 650);
-    },
-    [router]
-  );
+  const navigate = useCallback((dir: 1 | -1) => {
+    if (lockedRef.current) return;
+    const next = activeIndexRef.current + dir;
+    if (next < 0 || next >= projects.length) return;
+
+    lockedRef.current = true;
+    activeIndexRef.current = next;
+    setDirection(dir);
+    setActiveIndex(next);
+
+    // Keep Lenis scroll position proportional so the section exits cleanly:
+    // project 0 → section top, project n-1 → section bottom.
+    const el = containerRef.current;
+    if (el) {
+      const maxScroll = el.offsetHeight - window.innerHeight;
+      const t = (projects.length > 1) ? next / (projects.length - 1) : 0;
+      getLenis()?.scrollTo(el.offsetTop + t * maxScroll, { immediate: true });
+    }
+
+    setTimeout(() => { lockedRef.current = false; }, 420);
+  }, []);
+
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      const el = containerRef.current;
+      if (!el) return;
+
+      // Only act while the sticky panel fills the viewport
+      const { top, bottom } = el.getBoundingClientRect();
+      if (top > 1 || bottom < window.innerHeight - 1) return;
+
+      const dir = e.deltaY > 0 ? 1 : -1;
+      const curr = activeIndexRef.current;
+
+      // At first project scrolling up, or last project scrolling down:
+      // let Lenis handle so the page scrolls naturally out of the section.
+      if (dir === -1 && curr === 0) return;
+      if (dir === 1 && curr === projects.length - 1) return;
+
+      // Inside the section: own the scroll entirely.
+      e.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (e as any).lenisStopPropagation = true;
+
+      navigate(dir);
+    };
+
+    // Capture phase so we fire before Lenis's bubble-phase listener.
+    // passive:false so preventDefault() is honoured.
+    window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
+    return () => window.removeEventListener("wheel", handleWheel, true);
+  }, [navigate]);
+
+  const handleClick = useCallback((slug: string) => {
+    setExpandingSlug(slug);
+    setTimeout(() => router.push(`/projects/${slug}`), 650);
+  }, [router]);
 
   const scrollTo = useCallback((i: number) => {
-    scrollContainerRef.current?.scrollTo({
-      top: i * window.innerHeight,
-      behavior: "smooth",
-    });
+    if (lockedRef.current) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const maxScroll = el.offsetHeight - window.innerHeight;
+    const t = (projects.length > 1) ? i / (projects.length - 1) : 0;
+    lockedRef.current = true;
+    activeIndexRef.current = i;
+    setDirection(i > activeIndexRef.current ? 1 : -1);
+    setActiveIndex(i);
+    getLenis()?.scrollTo(el.offsetTop + t * maxScroll, { immediate: true });
+    setTimeout(() => { lockedRef.current = false; }, 420);
   }, []);
 
   const project = projects[activeIndex];
@@ -140,11 +140,11 @@ export default function ScrollProjects() {
     enter: (d: number) => ({ y: d > 0 ? 50 : -50, opacity: 0 }),
     center: {
       y: 0, opacity: 1,
-      transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
     },
     exit: (d: number) => ({
-      y: d > 0 ? -35 : 35, opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" as const },
+      y: d > 0 ? -30 : 30, opacity: 0,
+      transition: { duration: 0.25, ease: "easeIn" as const },
     }),
   };
 
@@ -152,50 +152,29 @@ export default function ScrollProjects() {
     enter: (d: number) => ({ y: d > 0 ? "40%" : "-40%", opacity: 0, rotate: d > 0 ? 2 : -8, scale: 0.9 }),
     center: {
       y: "0%", opacity: 1, rotate: 0, scale: 1,
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
     },
     exit: (d: number) => ({
       y: d > 0 ? "-40%" : "40%", opacity: 0, rotate: d > 0 ? -8 : 2, scale: 0.9,
-      transition: { duration: 0.35, ease: "easeIn" as const },
+      transition: { duration: 0.28, ease: "easeIn" as const },
     }),
   };
 
   return (
     <>
       {/*
-        Structure:
-        - Scroll container (height:100vh, overflow-y:scroll, scroll-snap:mandatory)
-            - Sticky display div (height:100vh, scroll-snap-align:start) ← project 0 snap
-            - (n-1) empty snap sections (each 100vh) ← projects 1..n-1
-        - No data-lenis-prevent; the capture listener handles Lenis isolation.
+        Sticky 500vh container: the page scrolls through its full height while
+        the inner panel stays pinned to the viewport. The project index is driven
+        entirely by wheel events — not by scrollYProgress — so fast scrolling
+        can never jump multiple indices in one frame.
       */}
       <div
         id="work"
-        ref={scrollContainerRef}
-        style={{
-          height: "100vh",
-          overflowY: "scroll",
-          scrollSnapType: "y mandatory",
-          position: "relative",
-          // Hide scrollbar visually (still scrollable)
-          scrollbarWidth: "none",
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          msOverflowStyle: "none" as any,
-        }}
-        // Chrome scrollbar hide via global CSS (.hide-scrollbar::-webkit-scrollbar { display:none })
-        className="hide-scrollbar"
+        ref={containerRef}
+        style={{ height: `${projects.length * 100}vh`, position: "relative" }}
       >
-        {/* ── Display: sticky, fills viewport, first snap point ─────────── */}
         <div
-          style={{
-            position: "sticky",
-            top: 0,
-            height: "100vh",
-            overflow: "hidden",
-            scrollSnapAlign: "start",
-            scrollSnapStop: "always",
-            zIndex: 10,
-          }}
+          style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden" }}
         >
           {/* Background */}
           <motion.div
@@ -249,7 +228,7 @@ export default function ScrollProjects() {
               {prevProject && (
                 <motion.div
                   animate={{ y: "-96%", scale: 0.88, opacity: 0.55 }}
-                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   style={{ position: "absolute", width: "100%", zIndex: 5 }}
                   className="pointer-events-none"
                 >
@@ -261,7 +240,7 @@ export default function ScrollProjects() {
               {nextProject && (
                 <motion.div
                   animate={{ y: "96%", scale: 0.88, opacity: 0.55 }}
-                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   style={{ position: "absolute", width: "100%", zIndex: 5 }}
                   className="pointer-events-none"
                 >
@@ -317,15 +296,6 @@ export default function ScrollProjects() {
             <motion.div className="h-full origin-left" style={{ backgroundColor: textColor + "50" }} animate={{ scaleX: (activeIndex + 1) / projects.length }} transition={{ duration: 0.5, ease: "easeOut" }} />
           </div>
         </div>
-        {/* ── End display ────────────────────────────────────────────────── */}
-
-        {/* ── Extra snap sections for projects 1..n-1 ─────────────────── */}
-        {projects.slice(1).map((_, i) => (
-          <div
-            key={i + 1}
-            style={{ height: "100vh", scrollSnapAlign: "start", scrollSnapStop: "always" }}
-          />
-        ))}
       </div>
 
       {/* Page-transition wipe */}
