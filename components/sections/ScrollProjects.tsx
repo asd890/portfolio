@@ -442,6 +442,32 @@ export default function ScrollProjects() {
         {/* Bottom bar — counter + dot nav + progress */}
         <div className="absolute bottom-0 left-0 right-0 z-20">
           <div className="flex items-center gap-4 px-5 md:px-12 pb-5">
+            {/* "Keep scrolling" hint — only visible on the last project */}
+            <AnimatePresence>
+              {activeIndex === projects.length - 1 && (
+                <motion.div
+                  key="scroll-hint"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.4, delay: 0.6 }}
+                  className="absolute right-5 md:right-12 bottom-6 flex items-center gap-2 pointer-events-none"
+                  style={{ color: textColor + "70" }}
+                >
+                  <span className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase">
+                    Continue scrolling
+                  </span>
+                  <motion.span
+                    animate={{ y: [0, 4, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                    className="text-sm leading-none"
+                  >
+                    ↓
+                  </motion.span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Counter */}
             <span
               className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase tabular-nums"
