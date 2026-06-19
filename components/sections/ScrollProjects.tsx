@@ -114,7 +114,7 @@ export default function ScrollProjects() {
       const t = projects.length > 1 ? next / (projects.length - 1) : 0;
       getLenis()?.scrollTo(el.offsetTop + t * maxScroll, { immediate: true });
     }
-    setTimeout(() => { lockedRef.current = false; }, 420);
+    setTimeout(() => { lockedRef.current = false; }, 900);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
