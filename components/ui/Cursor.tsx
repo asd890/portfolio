@@ -16,6 +16,7 @@ export default function Cursor() {
   const [label, setLabel] = useState<CursorLabel>(null);
   const [visible, setVisible] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [dark, setDark] = useState(false);
 
   // Dot tracks exactly
   const dotX = useSpring(mouseX, { stiffness: 1200, damping: 60 });
@@ -31,11 +32,17 @@ export default function Cursor() {
       mouseY.set(e.clientY);
       setVisible(true);
 
-      const cursorEl = (e.target as HTMLElement).closest("[data-cursor]") as HTMLElement | null;
+      const target = e.target as HTMLElement;
+
+      const cursorEl = target.closest("[data-cursor]") as HTMLElement | null;
       setLabel(cursorEl ? (LABEL_MAP[cursorEl.dataset.cursor ?? ""] ?? null) : null);
 
-      const clickable = (e.target as HTMLElement).closest("a, button, [data-cursor]");
+      const clickable = target.closest("a, button, [data-cursor]");
       setHovering(!!clickable);
+
+      // Switch to light cursor when over a dark-themed surface
+      const darkEl = target.closest("[data-cursor-theme='dark']");
+      setDark(!!darkEl);
     };
 
     const hide = () => setVisible(false);
@@ -49,6 +56,8 @@ export default function Cursor() {
   }, [mouseX, mouseY]);
 
   const isLabel = label !== null;
+  const dotColor = dark ? "#f5f4f0" : "#0a0a0a";
+  const ringColor = dark ? "rgba(245,244,240,0.5)" : "rgba(10,10,10,0.35)";
 
   return (
     <>
@@ -60,8 +69,8 @@ export default function Cursor() {
         transition={{ duration: 0.15 }}
       >
         <motion.div
-          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0a0a0a] mix-blend-difference"
-          animate={{ width: hovering ? 8 : 5, height: hovering ? 8 : 5 }}
+          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
+          animate={{ width: hovering ? 8 : 5, height: hovering ? 8 : 5, backgroundColor: dotColor }}
           transition={{ duration: 0.25, ease: "easeOut" }}
         />
       </motion.div>
@@ -81,7 +90,8 @@ export default function Cursor() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 bg-[#0a0a0a] text-white font-[family-name:var(--font-inter)] text-[10px] tracking-widest uppercase px-4 py-2 rounded-full whitespace-nowrap"
+              className="absolute -translate-x-1/2 -translate-y-1/2 font-[family-name:var(--font-inter)] text-[10px] tracking-widest uppercase px-4 py-2 rounded-full whitespace-nowrap"
+              style={{ backgroundColor: dotColor, color: dark ? "#0a0a0a" : "#f5f4f0" }}
             >
               {label}
             </motion.div>
@@ -89,14 +99,15 @@ export default function Cursor() {
             <motion.div
               key="ring"
               initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
+              animate={{ opacity: 1, scale: 1, borderColor: ringColor }}
               exit={{ opacity: 0, scale: 0.5 }}
               transition={{ duration: 0.25 }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#0a0a0a]/35 mix-blend-difference"
+              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border"
               style={{
                 width: hovering ? 52 : 36,
                 height: hovering ? 52 : 36,
-                transition: "width 0.35s cubic-bezier(0.22,1,0.36,1), height 0.35s cubic-bezier(0.22,1,0.36,1)",
+                borderColor: ringColor,
+                transition: "width 0.35s cubic-bezier(0.22,1,0.36,1), height 0.35s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease",
               }}
             />
           )}

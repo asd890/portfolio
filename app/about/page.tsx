@@ -229,7 +229,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── Philosophy — dark band ── */}
-      <section className="px-5 md:px-8 py-20 md:py-28" style={{ backgroundColor: "#0a0a0a" }}>
+      <section className="px-5 md:px-8 py-20 md:py-28" style={{ backgroundColor: "#0a0a0a" }} data-cursor-theme="dark">
         <FadeUp>
           <p className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase text-[#f5f4f0]/25 mb-16">
             Design Philosophy
