@@ -20,22 +20,28 @@ export default function ContactSection() {
     setStatus("sending");
     setErrorMsg("");
 
-    try {
-      const res = await fetch("https://formspree.io/f/mqeoryoj", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ name, email, message }),
-      });
-      let data: Record<string, unknown> = {};
-      const text = await res.text();
-      if (text) { try { data = JSON.parse(text); } catch { /* non-JSON response */ } }
-      if (!res.ok) throw new Error((data?.errors as {message:string}[])?.[0]?.message ?? `Error ${res.status}`);
-      setStatus("sent");
-      setName(""); setEmail(""); setMessage("");
-    } catch (err) {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("message", message);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://formspree.io/f/mqeoryoj");
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        setStatus("sent");
+        setName(""); setEmail(""); setMessage("");
+      } else {
+        setStatus("error");
+        setErrorMsg("Submission failed. Please email me directly.");
+      }
+    };
+    xhr.onerror = () => {
       setStatus("error");
-      setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
-    }
+      setErrorMsg("Network error. Please email me directly.");
+    };
+    xhr.send(formData);
   };
 
   const inputClass = "w-full bg-transparent border-b border-[#f5f4f0]/15 py-3 font-[family-name:var(--font-inter)] text-sm text-[#f5f4f0] placeholder-[#f5f4f0]/25 focus:outline-none focus:border-[#f5f4f0]/50 transition-colors duration-200";
