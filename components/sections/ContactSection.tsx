@@ -26,8 +26,10 @@ export default function ContactSection() {
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ name, email, message }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.errors?.[0]?.message ?? "Submission failed.");
+      let data: Record<string, unknown> = {};
+      const text = await res.text();
+      if (text) { try { data = JSON.parse(text); } catch { /* non-JSON response */ } }
+      if (!res.ok) throw new Error((data?.errors as {message:string}[])?.[0]?.message ?? `Error ${res.status}`);
       setStatus("sent");
       setName(""); setEmail(""); setMessage("");
     } catch (err) {
