@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 
 type CursorLabel = "View →" | "Open ↗" | null;
@@ -45,21 +45,36 @@ export default function Cursor() {
   const ringX = useSpring(mouseX, { stiffness: 180, damping: 26 });
   const ringY = useSpring(mouseY, { stiffness: 180, damping: 26 });
 
+  const posRef = useRef({ x: -200, y: -200 });
+
+  // rAF loop — re-samples background colour every frame so the cursor
+  // updates instantly during CSS transitions (e.g. the email hover fill)
+  // even when the mouse is stationary.
+  useEffect(() => {
+    let rafId: number;
+    const sample = () => {
+      const { x, y } = posRef.current;
+      if (x > 0 && y > 0) {
+        const el = document.elementFromPoint(x, y);
+        setDark(isDarkBg(getBgColor(el)));
+      }
+      rafId = requestAnimationFrame(sample);
+    };
+    rafId = requestAnimationFrame(sample);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
   useEffect(() => {
     const move = (e: MouseEvent) => {
+      posRef.current = { x: e.clientX, y: e.clientY };
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
       setVisible(true);
 
       const target = e.target as HTMLElement;
-
       const cursorEl = target.closest("[data-cursor]") as HTMLElement | null;
       setLabel(cursorEl ? (LABEL_MAP[cursorEl.dataset.cursor ?? ""] ?? null) : null);
       setHovering(!!target.closest("a, button, [data-cursor]"));
-
-      // Auto-detect background brightness under the cursor
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      setDark(isDarkBg(getBgColor(el)));
     };
 
     const hide = () => setVisible(false);
