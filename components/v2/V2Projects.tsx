@@ -16,7 +16,7 @@ function CardImage({ project, eager }: { project: Project; eager: boolean }) {
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-2xl"
+      className="group relative w-full overflow-hidden rounded-2xl"
       style={{ aspectRatio: "4 / 3", backgroundColor: accent }}
     >
       {project.image && !failed ? (
@@ -86,11 +86,10 @@ export default function V2Projects() {
             initial={{ opacity: 0, y: 36 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease, delay: 0.1 + i * 0.08 }}
-            whileHover={{ y: -6 }}
           >
             <Link
               href={`/projects/${p.slug}`}
-              className="group block rounded-3xl bg-[#eceae5] p-3 transition-[background-color,box-shadow] duration-300 hover:bg-[#e6e4de] hover:shadow-[0_24px_50px_-24px_rgba(54,49,245,0.35)] cursor-none"
+              className="block rounded-3xl bg-[#eceae5] p-3 cursor-none"
             >
               {/* Image */}
               <CardImage project={p} eager={i < 2} />

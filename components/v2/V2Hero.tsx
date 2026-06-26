@@ -29,6 +29,7 @@ export default function V2Hero() {
     <section
       onMouseMove={handleMove}
       onMouseLeave={() => opacity.set(0)}
+      data-hide-cursor
       className="relative overflow-hidden"
     >
       {/* Grid background */}

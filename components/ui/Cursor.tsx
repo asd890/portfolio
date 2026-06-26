@@ -38,6 +38,7 @@ export default function Cursor() {
   const [label, setLabel] = useState<CursorLabel>(null);
   const [visible, setVisible] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [dark, setDark] = useState(false);
 
   const dotX = useSpring(mouseX, { stiffness: 1200, damping: 60 });
@@ -75,6 +76,7 @@ export default function Cursor() {
       const cursorEl = target.closest("[data-cursor]") as HTMLElement | null;
       setLabel(cursorEl ? (LABEL_MAP[cursorEl.dataset.cursor ?? ""] ?? null) : null);
       setHovering(!!target.closest("a, button, [data-cursor]"));
+      setHidden(!!target.closest("[data-hide-cursor]") && !cursorEl);
     };
 
     const hide = () => setVisible(false);
@@ -96,7 +98,7 @@ export default function Cursor() {
       <motion.div
         className="fixed top-0 left-0 z-[9999] pointer-events-none"
         style={{ x: dotX, y: dotY }}
-        animate={{ opacity: visible && !isLabel ? 1 : 0 }}
+        animate={{ opacity: visible && !isLabel && !hidden ? 1 : 0 }}
         transition={{ duration: 0.15 }}
       >
         <motion.div
@@ -110,7 +112,7 @@ export default function Cursor() {
       <motion.div
         className="fixed top-0 left-0 z-[9998] pointer-events-none"
         style={{ x: ringX, y: ringY }}
-        animate={{ opacity: visible ? 1 : 0 }}
+        animate={{ opacity: visible && !hidden ? 1 : 0 }}
         transition={{ duration: 0.2 }}
       >
         <AnimatePresence mode="wait">
