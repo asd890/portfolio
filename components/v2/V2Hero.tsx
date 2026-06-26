@@ -1,21 +1,18 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue } from "framer-motion";
 
 const ACCENT = "#3631F5";
-const CELL = 58;
+const CELL = 40;
 
 export default function V2Hero() {
   const gridRef = useRef<HTMLDivElement>(null);
 
+  // No spring — the box snaps directly to the hovered cell.
   const x = useMotionValue(-200);
   const y = useMotionValue(-200);
   const opacity = useMotionValue(0);
-
-  // Slight follow/lag so the highlight glides between cells.
-  const sx = useSpring(x, { stiffness: 600, damping: 40, mass: 0.4 });
-  const sy = useSpring(y, { stiffness: 600, damping: 40, mass: 0.4 });
 
   const handleMove = (e: React.MouseEvent) => {
     const el = gridRef.current;
@@ -40,24 +37,24 @@ export default function V2Hero() {
         className="absolute inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(10,10,10,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(10,10,10,0.06) 1px, transparent 1px)",
+            "linear-gradient(to right, rgba(10,10,10,0.055) 1px, transparent 1px), linear-gradient(to bottom, rgba(10,10,10,0.055) 1px, transparent 1px)",
           backgroundSize: `${CELL}px ${CELL}px`,
           maskImage: "radial-gradient(120% 90% at 50% 30%, #000 55%, transparent 100%)",
           WebkitMaskImage: "radial-gradient(120% 90% at 50% 30%, #000 55%, transparent 100%)",
         }}
       />
 
-      {/* Cursor-following highlighted cell */}
+      {/* Single highlighted cell under the cursor */}
       <motion.div
         className="absolute top-0 left-0 pointer-events-none"
         style={{
-          x: sx,
-          y: sy,
+          x,
+          y,
           opacity,
           width: CELL,
           height: CELL,
           backgroundColor: ACCENT,
-          borderRadius: 4,
+          borderRadius: 3,
         }}
       />
 
