@@ -43,7 +43,7 @@ export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress, scrollY } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const rawOpacity = useTransform(scrollY, [0, 320], [1, 0]);
+  const rawOpacity = useTransform(scrollY, [0, 600], [1, 0]);
   const opacity = useSpring(rawOpacity, { stiffness: 200, damping: 30, restDelta: 0.001 });
 
   return (
