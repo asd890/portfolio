@@ -29,6 +29,7 @@ const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
 export default function ScrollProjects() {
   const sectionRef = useRef<HTMLElement>(null);
   const router = useRouter();
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [expandingSlug, setExpandingSlug] = useState<string | null>(null);
   const resolvedColors = useResolvedColors();
   const inView = useInView(sectionRef, { once: true, margin: "-8%" });
@@ -38,12 +39,17 @@ export default function ScrollProjects() {
     setTimeout(() => router.push(`/projects/${slug}`), 650);
   }, [router]);
 
+  // Image panel shows hovered project, falls back to first project
+  const panelIndex = hoveredIndex ?? 0;
+  const panelProject = projects[panelIndex];
+  const panelAccent = resolvedColors[panelProject.slug] ?? FALLBACK_ACCENT;
+
   return (
     <>
       <section id="work" ref={sectionRef} className="px-5 md:px-12 py-24 md:py-32">
 
         {/* Section header */}
-        <div className="flex items-end justify-between border-t border-[#0a0a0a]/10 pt-7 mb-8 md:mb-10">
+        <div className="flex items-end justify-between border-t border-[#0a0a0a]/10 pt-7 mb-2 md:mb-4">
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -63,89 +69,153 @@ export default function ScrollProjects() {
           </motion.p>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-          {projects.map((p, i) => {
-            const accent = resolvedColors[p.slug] ?? FALLBACK_ACCENT;
-            const isFeatured = i === 0;
+        <div className="flex items-start gap-12 xl:gap-20">
 
-            return (
-              <motion.article
-                key={p.slug}
-                className={`group relative overflow-hidden cursor-none ${isFeatured ? "md:col-span-2" : ""}`}
-                style={{
-                  aspectRatio: isFeatured ? "16 / 7" : "4 / 3",
-                  borderRadius: "3px",
-                  backgroundColor: accent,
-                }}
-                initial={{ opacity: 0, y: 56 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.72, ease, delay: i * 0.1 }}
-                onClick={() => handleClick(p.slug)}
-                data-cursor="view"
-              >
-                {/* Image */}
-                {p.image && (
-                  <Image
-                    src={p.image}
-                    alt={p.title}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                    sizes={isFeatured ? "100vw" : "(max-width: 768px) 100vw, 50vw"}
-                    priority={i === 0}
-                  />
-                )}
+          {/* Left — project list */}
+          <div className="flex-1 min-w-0">
+            {projects.map((p, i) => {
+              const accent = resolvedColors[p.slug] ?? FALLBACK_ACCENT;
+              const isHovered = hoveredIndex === i;
 
-                {/* Persistent gradient so text is always readable */}
-                <div
-                  className="absolute inset-0 transition-opacity duration-500 group-hover:opacity-100"
-                  style={{
-                    background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.12) 45%, transparent 75%)",
-                    opacity: 0.55,
-                  }}
-                />
-
-                {/* Project info — title always visible, CTA slides in on hover */}
-                <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
-                  <div className="translate-y-1 group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                    <p className="font-[family-name:var(--font-inter)] text-[10px] tracking-widest uppercase text-white/50 mb-2">
-                      {p.year}&nbsp;&nbsp;·&nbsp;&nbsp;{p.category}
-                    </p>
-                    <h3
-                      className="font-[family-name:var(--font-playfair)] text-white leading-[0.95]"
-                      style={{ fontSize: isFeatured ? "clamp(1.8rem,3.5vw,3.5rem)" : "clamp(1.4rem,2.2vw,2.2rem)" }}
-                    >
-                      {p.title}
-                    </h3>
-
-                    {/* CTA — hidden until hover */}
-                    <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0 transition-all duration-400 ease-out delay-75">
-                      <span className="font-[family-name:var(--font-inter)] text-[10px] tracking-widest uppercase text-white/65">
-                        Open Case Study
-                      </span>
-                      <span className="text-white/65 text-sm leading-none transition-transform duration-300 group-hover:translate-x-1">
-                        →
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Large faint project number — personality detail */}
-                <span
-                  className="absolute top-4 right-5 font-[family-name:var(--font-playfair)] italic leading-none pointer-events-none select-none transition-opacity duration-500 opacity-[0.07] group-hover:opacity-[0.12]"
-                  style={{ fontSize: isFeatured ? "9rem" : "6.5rem", color: "#fff" }}
+              return (
+                <motion.div
+                  key={p.slug}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.55, ease, delay: i * 0.08 }}
                 >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
+                  <button
+                    onClick={() => handleClick(p.slug)}
+                    onMouseEnter={() => setHoveredIndex(i)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    className="group w-full text-left border-b border-[#0a0a0a]/08 py-6 md:py-7 cursor-none block"
+                    data-cursor="view"
+                  >
+                    <div className="flex items-center justify-between gap-6">
 
-                {/* Accent colour tint on hover */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-[0.18] transition-opacity duration-500 mix-blend-color pointer-events-none"
-                  style={{ backgroundColor: accent }}
-                />
-              </motion.article>
-            );
-          })}
+                      {/* Number + title */}
+                      <div className="flex items-baseline gap-4 md:gap-6 min-w-0 flex-1">
+                        <motion.span
+                          className="font-[family-name:var(--font-inter)] text-xs tabular-nums flex-shrink-0"
+                          animate={{ color: isHovered ? accent : "rgba(10,10,10,0.22)" }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {String(i + 1).padStart(2, "0")}
+                        </motion.span>
+
+                        <span
+                          className="font-[family-name:var(--font-playfair)] text-[#0a0a0a] truncate block
+                            group-hover:translate-x-2 transition-transform duration-500 ease-out"
+                          style={{ fontSize: "clamp(1.6rem, 3vw, 3.2rem)", lineHeight: 1 }}
+                        >
+                          {p.title}
+                        </span>
+                      </div>
+
+                      {/* Category + year + arrow */}
+                      <div className="flex-shrink-0 flex items-center gap-4 md:gap-6">
+                        <span className="hidden md:block font-[family-name:var(--font-inter)] text-[10px] tracking-widest uppercase text-[#0a0a0a]/30 transition-colors duration-300 group-hover:text-[#0a0a0a]/55">
+                          {p.category}
+                        </span>
+                        <span className="font-[family-name:var(--font-inter)] text-xs text-[#0a0a0a]/20 tabular-nums">
+                          {p.year}
+                        </span>
+                        <span
+                          className="text-sm text-[#0a0a0a]/0 group-hover:text-[#0a0a0a]/40
+                            translate-x-0 group-hover:translate-x-1
+                            transition-all duration-300 ease-out"
+                        >
+                          →
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Right — sticky image panel (large screens only) */}
+          <div className="hidden lg:block flex-shrink-0 w-[36%] xl:w-[38%]">
+            <div className="sticky top-[20vh]">
+              <motion.div
+                className="relative overflow-hidden"
+                style={{ aspectRatio: "4 / 3", borderRadius: "3px" }}
+                animate={{ opacity: hoveredIndex === null ? 0.3 : 1 }}
+                transition={{ duration: 0.4, ease }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={panelProject.slug}
+                    className="absolute inset-0"
+                    style={{ backgroundColor: panelAccent }}
+                    initial={{ opacity: 0, scale: 1.04 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
+                    transition={{ duration: 0.38, ease }}
+                  >
+                    {panelProject.image && (
+                      <Image
+                        src={panelProject.image}
+                        alt={panelProject.title}
+                        fill
+                        className="object-cover"
+                        sizes="40vw"
+                        priority
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Project label that appears on hover */}
+                <AnimatePresence>
+                  {hoveredIndex !== null && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 p-5"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.3, ease }}
+                      style={{
+                        background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
+                      }}
+                    >
+                      <p className="font-[family-name:var(--font-inter)] text-[10px] tracking-widest uppercase text-white/50 mb-1">
+                        {panelProject.category} · {panelProject.year}
+                      </p>
+                      <p className="font-[family-name:var(--font-playfair)] text-white text-xl leading-tight">
+                        {panelProject.title}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Count indicator */}
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex gap-1.5">
+                  {projects.map((_, i) => (
+                    <motion.span
+                      key={i}
+                      className="block rounded-full"
+                      animate={{
+                        width: i === panelIndex && hoveredIndex !== null ? 16 : 4,
+                        height: 3,
+                        backgroundColor: i === panelIndex && hoveredIndex !== null
+                          ? (resolvedColors[projects[i].slug] ?? "#0a0a0a")
+                          : "rgba(10,10,10,0.15)",
+                      }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  ))}
+                </div>
+                <span className="font-[family-name:var(--font-inter)] text-[10px] tabular-nums text-[#0a0a0a]/25 tracking-widest">
+                  {String(projects.length).padStart(2, "0")} projects
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
