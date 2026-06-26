@@ -31,7 +31,7 @@ export default function V2Nav() {
 
   return (
     <div className="sticky top-4 z-50 px-4">
-      <nav className="mx-auto max-w-3xl flex items-center justify-between gap-4 rounded-full border border-black/5 bg-white/80 backdrop-blur-md pl-5 pr-2 py-2 shadow-[0_6px_24px_-12px_rgba(0,0,0,0.25)]">
+      <nav className="mx-auto max-w-5xl flex items-center justify-between gap-4 rounded-full border border-black/5 bg-white/80 backdrop-blur-md pl-5 pr-2 py-2 shadow-[0_6px_24px_-12px_rgba(0,0,0,0.25)]">
         {/* Logo */}
         <Link
           href="/v2"

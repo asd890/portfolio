@@ -76,7 +76,7 @@ export default function V2About() {
     <section
       id="about"
       ref={ref}
-      className="mx-auto max-w-3xl px-6 py-24 md:py-28 border-t border-black/5"
+      className="mx-auto max-w-5xl px-6 py-24 md:py-28 border-t border-black/5"
     >
       {/* Label */}
       <motion.div

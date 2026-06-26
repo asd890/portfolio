@@ -62,7 +62,7 @@ export default function V2Projects() {
   const inView = useInView(ref, { once: true, margin: "-10%" });
 
   return (
-    <section id="work" ref={ref} className="mx-auto max-w-3xl px-6 pb-28 md:pb-36">
+    <section id="work" ref={ref} className="mx-auto max-w-5xl px-6 pb-28 md:pb-36">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}

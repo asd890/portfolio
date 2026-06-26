@@ -32,7 +32,7 @@ export default function V2Contact() {
         initial={{ opacity: 0, y: 32 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, ease }}
-        className="relative mx-auto max-w-3xl overflow-hidden rounded-[28px] p-8 md:p-14"
+        className="relative mx-auto max-w-5xl overflow-hidden rounded-[28px] p-8 md:p-14"
         style={{ backgroundColor: ACCENT }}
       >
         {/* Grid motif echoing the hero */}

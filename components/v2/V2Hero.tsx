@@ -60,7 +60,7 @@ export default function V2Hero() {
       />
 
       {/* Content */}
-      <div className="relative mx-auto max-w-3xl px-6 pt-28 md:pt-36 pb-20 md:pb-28">
+      <div className="relative mx-auto max-w-5xl px-6 pt-28 md:pt-36 pb-20 md:pb-28">
         <motion.p
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
