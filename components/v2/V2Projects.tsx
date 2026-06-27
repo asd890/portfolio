@@ -10,14 +10,24 @@ const ACCENT = "#3631F5";
 const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
 /** Card image with a graceful fallback when the file is missing. */
-function CardImage({ project, eager }: { project: Project; eager: boolean }) {
+function CardImage({
+  project,
+  eager,
+  ratio = "4 / 3",
+  sizes = "(max-width: 768px) 100vw, 480px",
+}: {
+  project: Project;
+  eager: boolean;
+  ratio?: string;
+  sizes?: string;
+}) {
   const [failed, setFailed] = useState(false);
   const accent = project.accentColor ?? "#888";
 
   return (
     <div
       className="group relative w-full overflow-hidden rounded-2xl"
-      style={{ aspectRatio: "4 / 3", backgroundColor: accent }}
+      style={{ aspectRatio: ratio, backgroundColor: accent }}
     >
       {project.image && !failed ? (
         <Image
@@ -26,7 +36,7 @@ function CardImage({ project, eager }: { project: Project; eager: boolean }) {
           fill
           onError={() => setFailed(true)}
           className="object-cover transition-transform duration-[800ms] ease-out group-hover:scale-[1.06]"
-          sizes="(max-width: 768px) 100vw, 384px"
+          sizes={sizes}
           priority={eager}
         />
       ) : (
@@ -57,9 +67,24 @@ function CardImage({ project, eager }: { project: Project; eager: boolean }) {
   );
 }
 
+function Chips({ project }: { project: Project }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="rounded-full bg-[#0a0a0a] px-2.5 py-1 font-[family-name:var(--font-inter)] text-[11px] text-white">
+        {project.year}
+      </span>
+      <span className="rounded-full border border-black/10 bg-white px-2.5 py-1 font-[family-name:var(--font-inter)] text-[11px] text-[#0a0a0a]/70">
+        {project.industry}
+      </span>
+    </div>
+  );
+}
+
 export default function V2Projects() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10%" });
+
+  const [featured, ...rest] = projects;
 
   return (
     <section id="work" ref={ref} className="mx-auto max-w-5xl px-6 pb-28 md:pb-36">
@@ -78,31 +103,67 @@ export default function V2Projects() {
         </p>
       </motion.div>
 
-      {/* Grid */}
+      {/* Featured project */}
+      <motion.div
+        initial={{ opacity: 0, y: 36 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7, ease, delay: 0.1 }}
+        className="mb-5"
+      >
+        <Link
+          href={`/projects/${featured.slug}`}
+          className="block rounded-3xl bg-[#eceae5] p-3 cursor-none md:grid md:grid-cols-2 md:gap-2 md:items-stretch"
+        >
+          <CardImage project={featured} eager ratio="3 / 2" sizes="(max-width: 768px) 100vw, 600px" />
+
+          {/* Meta beside the image on desktop */}
+          <div className="flex flex-col justify-between px-2.5 pt-4 pb-2 md:px-7 md:py-6">
+            <div>
+              <span className="font-[family-name:var(--font-inter)] text-[11px] tracking-widest uppercase text-[#0a0a0a]/35">
+                Featured
+              </span>
+              <h3
+                className="font-[family-name:var(--font-inter)] font-semibold tracking-tight text-[#0a0a0a] mt-3"
+                style={{ fontSize: "clamp(1.4rem, 2.4vw, 2rem)", lineHeight: 1.12 }}
+              >
+                {featured.title}
+              </h3>
+              <p className="font-[family-name:var(--font-inter)] text-sm text-[#0a0a0a]/60 mt-3 leading-relaxed max-w-md">
+                {featured.description}
+              </p>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between gap-4">
+              <Chips project={featured} />
+              <span
+                className="flex items-center gap-1.5 font-[family-name:var(--font-inter)] text-sm font-medium"
+                style={{ color: ACCENT }}
+              >
+                View project <span className="leading-none">→</span>
+              </span>
+            </div>
+          </div>
+        </Link>
+      </motion.div>
+
+      {/* Remaining projects grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {projects.map((p, i) => (
+        {rest.map((p, i) => (
           <motion.div
             key={p.slug}
             initial={{ opacity: 0, y: 36 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, ease, delay: 0.1 + i * 0.08 }}
+            transition={{ duration: 0.6, ease, delay: 0.2 + i * 0.08 }}
           >
             <Link
               href={`/projects/${p.slug}`}
               className="block rounded-3xl bg-[#eceae5] p-3 cursor-none"
             >
-              {/* Image */}
-              <CardImage project={p} eager={i < 2} />
+              <CardImage project={p} eager={false} />
 
-              {/* Meta */}
               <div className="px-1.5 pt-4 pb-2">
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <span className="rounded-full bg-[#0a0a0a] px-2.5 py-1 font-[family-name:var(--font-inter)] text-[11px] text-white">
-                    {p.year}
-                  </span>
-                  <span className="rounded-full border border-black/10 bg-white px-2.5 py-1 font-[family-name:var(--font-inter)] text-[11px] text-[#0a0a0a]/70">
-                    {p.industry}
-                  </span>
+                <div className="mb-3">
+                  <Chips project={p} />
                 </div>
                 <h3 className="font-[family-name:var(--font-inter)] text-[17px] leading-snug tracking-tight text-[#0a0a0a]">
                   <span className="font-semibold">{p.title}:</span>{" "}

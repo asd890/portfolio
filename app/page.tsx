@@ -1,21 +1,17 @@
-import Nav from "@/components/layout/Nav";
-import Hero from "@/components/sections/Hero";
-import ScrollProjects from "@/components/sections/ScrollProjects";
-import ProjectMarquee from "@/components/sections/ProjectMarquee";
-import AboutCTA from "@/components/sections/AboutCTA";
-import ContactSection from "@/components/sections/ContactSection";
-import Footer from "@/components/sections/Footer";
+import V2Nav from "@/components/v2/V2Nav";
+import V2Hero from "@/components/v2/V2Hero";
+import V2Projects from "@/components/v2/V2Projects";
+import V2About from "@/components/v2/V2About";
+import V2Contact from "@/components/v2/V2Contact";
 
 export default function Home() {
   return (
-    <main className="relative" style={{ backgroundColor: "var(--bg)" }}>
-      <Nav />
-      <Hero />
-      <ProjectMarquee />
-      <ScrollProjects />
-      <AboutCTA />
-      <ContactSection />
-      <Footer />
+    <main id="top" className="relative min-h-screen" style={{ backgroundColor: "#f1f0ec" }}>
+      <V2Nav />
+      <V2Hero />
+      <V2Projects />
+      <V2About />
+      <V2Contact />
     </main>
   );
 }

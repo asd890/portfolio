@@ -3,7 +3,8 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
-import Nav from "@/components/layout/Nav";
+import V2Nav from "@/components/v2/V2Nav";
+import V2Contact from "@/components/v2/V2Contact";
 import type { Project, ContentBlock } from "@/lib/projects";
 import { getContrastColor } from "@/lib/colorUtils";
 
@@ -150,9 +151,9 @@ export default function ProjectDetail({ project }: { project: Project }) {
   return (
     <div
       className="min-h-screen"
-      style={{ backgroundColor: "#f5f4f0" }}
+      style={{ backgroundColor: "#f1f0ec" }}
     >
-      <Nav showBack />
+      <V2Nav />
 
       {/* Hero — cinematic full-viewport */}
       <section ref={heroRef} className="relative h-screen overflow-hidden">
@@ -427,12 +428,14 @@ export default function ProjectDetail({ project }: { project: Project }) {
           Next
         </p>
         <a
-          href="/"
+          href="/#work"
           className="font-[family-name:var(--font-playfair)] italic text-[clamp(1.5rem,4vw,3rem)] text-[#0a0a0a] hover:opacity-60 transition-opacity"
         >
           Back to all work →
         </a>
       </div>
+
+      <V2Contact />
     </div>
   );
 }
