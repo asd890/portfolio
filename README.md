@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ahmed Naik — Portfolio
 
-## Getting Started
+A personal portfolio site for a UX/UI designer. Standalone, standard **Next.js** — ready to build and deploy anywhere (Vercel, Netlify, a Node host, or a static/edge platform).
 
-First, run the development server:
+## Stack
+
+- **Next.js 15** (App Router) + **React 19**
+- **TypeScript**
+- **Tailwind CSS v4**
+- **Framer Motion** — entrance and scroll animations
+- **Lenis** — smooth scrolling
+- Custom cursor that auto-inverts over dark backgrounds
+
+## Routes
+
+| Route                 | Page                                                         |
+| --------------------- | ----------------------------------------------------------- |
+| `/`                   | Landing — hero, selected projects, about, contact           |
+| `/about`              | Full about page — experience, skills, education, philosophy |
+| `/projects/[slug]`    | Project case-study detail (statically generated per project)|
+
+Project content lives in [`lib/projects.ts`](lib/projects.ts) — edit that one file to add, remove, or update case studies. Only LocalBitcoins and ListoBite ship with real imagery; the rest fall back gracefully to an accent-colour card with the project title.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build & deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build   # production build
+npm run start   # serve the production build locally
+```
 
-## Learn More
+**Vercel (recommended):** push this folder to a Git repo and import it at [vercel.com/new](https://vercel.com/new). No configuration or environment variables are required — it builds out of the box.
 
-To learn more about Next.js, take a look at the following resources:
+## Customising
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Content / copy:** project data in `lib/projects.ts`; about-page data (experience, education, skills) at the top of `app/about/page.tsx`.
+- **Photo:** replace `public/portrait.jpg`.
+- **Project images:** drop files in `public/projects/` and reference them from `lib/projects.ts`.
+- **Accent colour:** the blue `#3631F5` is defined as an `ACCENT` constant near the top of each `components/v2/*` file.
+- **Contact email & socials:** `components/v2/V2Contact.tsx`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project structure
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  layout.tsx              Root layout — fonts, smooth scroll, cursor
+  page.tsx                Landing page
+  globals.css             Global styles + Tailwind
+  about/page.tsx          About page
+  projects/[slug]/        Project detail (page + client component)
+components/
+  v2/                     Landing + shared sections (nav, hero, projects, about, contact)
+  ui/Cursor.tsx           Custom cursor
+  layout/                 Smooth-scroll provider
+lib/
+  projects.ts             Project data + types
+  colorUtils.ts           Contrast / colour helpers
+public/                   Images and static assets
+```

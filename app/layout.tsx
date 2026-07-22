@@ -3,7 +3,6 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import SmoothScrollProvider from "@/components/layout/SmoothScrollProvider";
 import Cursor from "@/components/ui/Cursor";
-import { NavColorProvider } from "@/contexts/NavColorContext";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -18,9 +17,8 @@ const inter = Inter({
   weight: ["300", "400", "500", "600"],
 });
 
-
 export const metadata: Metadata = {
-  title: "Portfolio — UX/UI Designer",
+  title: "Ahmed Naik — UX/UI Designer",
   description:
     "UX/UI Designer with 8+ years of experience creating digital products, marketing campaigns, and visual experiences.",
 };
@@ -31,12 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
       <body>
-        <NavColorProvider>
-          <SmoothScrollProvider>
-            <Cursor />
-            {children}
-          </SmoothScrollProvider>
-        </NavColorProvider>
+        <SmoothScrollProvider>
+          <Cursor />
+          {children}
+        </SmoothScrollProvider>
       </body>
     </html>
   );

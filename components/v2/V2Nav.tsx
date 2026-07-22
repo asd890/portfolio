@@ -14,12 +14,14 @@ function scrollToId(id: string) {
   const el = document.querySelector(id);
   if (!el) return;
   const lenis = getLenis();
-  lenis ? lenis.scrollTo(el as HTMLElement, { offset: -90, duration: 1.1 }) : el.scrollIntoView({ behavior: "smooth" });
+  if (lenis) lenis.scrollTo(el as HTMLElement, { offset: -90, duration: 1.1 });
+  else el.scrollIntoView({ behavior: "smooth" });
 }
 
 function scrollTop() {
   const lenis = getLenis();
-  lenis ? lenis.scrollTo(0, { duration: 1.1 }) : window.scrollTo({ top: 0, behavior: "smooth" });
+  if (lenis) lenis.scrollTo(0, { duration: 1.1 });
+  else window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 const scrollItems = [

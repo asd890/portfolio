@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import V2Nav from "@/components/v2/V2Nav";
 import V2Contact from "@/components/v2/V2Contact";
 import type { Project, ContentBlock } from "@/lib/projects";
@@ -427,12 +428,12 @@ export default function ProjectDetail({ project }: { project: Project }) {
         <p className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase text-[#0a0a0a]/30 mb-4">
           Next
         </p>
-        <a
+        <Link
           href="/#work"
           className="font-[family-name:var(--font-playfair)] italic text-[clamp(1.5rem,4vw,3rem)] text-[#0a0a0a] hover:opacity-60 transition-opacity"
         >
           Back to all work →
-        </a>
+        </Link>
       </div>
 
       <V2Contact />
