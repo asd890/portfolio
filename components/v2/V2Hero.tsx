@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ACCENT = "#3631F5";
 const CELL = 40;
-
-const SPOT_LINE = "rgba(54,49,245,0.18)";
-const SPOT_GLOW = "rgba(54,49,245,0.07)";
 
 const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -35,13 +32,6 @@ function Word({ children }: { children: React.ReactNode }) {
 }
 
 export default function V2Hero() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const spotRef = useRef<HTMLDivElement>(null);
-
-  const target = useRef({ x: -500, y: -500 });
-  const current = useRef({ x: -500, y: -500 });
-  const visible = useRef(false);
-
   const [cycle, setCycle] = useState(0);
 
   // Cycle the accent word.
@@ -50,39 +40,8 @@ export default function V2Hero() {
     return () => clearInterval(id);
   }, []);
 
-  // Smoothly glide the spotlight toward the cursor each frame.
-  useEffect(() => {
-    let raf: number;
-    const tick = () => {
-      current.current.x += (target.current.x - current.current.x) * 0.18;
-      current.current.y += (target.current.y - current.current.y) * 0.18;
-      const el = spotRef.current;
-      if (el) {
-        el.style.setProperty("--mx", `${current.current.x}px`);
-        el.style.setProperty("--my", `${current.current.y}px`);
-        el.style.opacity = visible.current ? "1" : "0";
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  const handleMove = (e: React.MouseEvent) => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    target.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    visible.current = true;
-  };
-
   return (
-    <section
-      ref={sectionRef}
-      onMouseMove={handleMove}
-      onMouseLeave={() => { visible.current = false; }}
-      className="relative overflow-hidden"
-    >
+    <section className="relative overflow-hidden">
       {/* Base faint grid */}
       <div
         className="absolute inset-0"
@@ -94,27 +53,6 @@ export default function V2Hero() {
           WebkitMaskImage: "radial-gradient(120% 90% at 50% 30%, #000 55%, transparent 100%)",
         }}
       />
-
-      {/* Spotlight */}
-      <div
-        ref={spotRef}
-        className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-        style={{ opacity: 0 }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{ background: `radial-gradient(circle 200px at var(--mx) var(--my), ${SPOT_GLOW} 0%, transparent 65%)` }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `linear-gradient(to right, ${SPOT_LINE} 1px, transparent 1px), linear-gradient(to bottom, ${SPOT_LINE} 1px, transparent 1px)`,
-            backgroundSize: `${CELL}px ${CELL}px`,
-            maskImage: "radial-gradient(circle 150px at var(--mx) var(--my), #000 0%, rgba(0,0,0,0.85) 35%, transparent 72%)",
-            WebkitMaskImage: "radial-gradient(circle 150px at var(--mx) var(--my), #000 0%, rgba(0,0,0,0.85) 35%, transparent 72%)",
-          }}
-        />
-      </div>
 
       {/* Content */}
       <div className="relative mx-auto max-w-5xl px-6 pt-28 md:pt-36 pb-20 md:pb-28">
@@ -173,7 +111,6 @@ export default function V2Hero() {
             </motion.span>
           </span>
         </motion.h1>
-
       </div>
     </section>
   );
