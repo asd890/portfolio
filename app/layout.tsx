@@ -18,7 +18,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ahmed Naik — UX/UI Designer",
+  title: "Ahmed Naik · UX/UI Designer",
   description:
     "UX/UI Designer with 8+ years of experience creating digital products, marketing campaigns, and visual experiences.",
 };

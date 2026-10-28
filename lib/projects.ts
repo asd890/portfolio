@@ -5,6 +5,18 @@ export type ContentBlock =
   | { type: "images"; srcs: string[]; caption?: string }
   | { type: "video"; url: string; caption?: string };
 
+/** One narrative act on a story-first project page (goals -> process -> outcome). */
+export interface Act {
+  label: string;
+  title: string;
+  /** One-line statement of what the act had to achieve. */
+  goalLead: string;
+  /** The specific objectives behind that goal. */
+  goals: string[];
+  process: string;
+  outcome: string;
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -23,11 +35,21 @@ export interface Project {
   image?: string;
   /** Full-bleed hero image for the project detail page. Falls back to `image` if omitted. */
   heroImage?: string;
+  /** Animated hero. Two art-directed crops rather than one video scaled down, so
+   *  phones get their own framing instead of a slice of the desktop composition.
+   *  `poster` is also the reduced-motion and autoplay-blocked fallback. */
+  heroVideo?: { desktop: string; mobile: string; poster: string; posterMobile: string };
   images?: string[];
-  problem: string;
-  process: string[];
-  solution: string;
-  outcomes: { metric: string; value: string }[];
+  problem?: string;
+  process?: string[];
+  solution?: string;
+  outcomes?: { metric: string; value: string }[];
+  /** Standalone opening paragraph, set above the acts. */
+  thesis?: string;
+  /** Story-first structure. When present it replaces problem/process/solution/outcomes. */
+  acts?: Act[];
+  /** Closing line shown in the accent card. */
+  closing?: string;
   /** Rich content sections shown between Process and Solution. */
   content?: ContentBlock[];
 }
@@ -36,56 +58,68 @@ export const projects: Project[] = [
   {
     slug: "localbitcoins",
     title: "LocalBitcoins",
-    category: "UX / UI Design | Visual Design",
+    category: "UX / UI Design · Visual Identity",
     description:
-      "Designing a new way for close friends to communicate through voice and video.",
+      "Designing trust between strangers, then switching it off gracefully.",
     fullDescription:
-      "SnackSnack reimagines how close friends stay connected through ephemeral audio and video moments—intimate, playful, and always authentic.",
-    year: "2024",
-    role: "Lead Product Designer",
-    timeline: "8 months",
-    team: "4 designers, 6 engineers",
-    tools: ["Figma", "Protopie", "Maze", "Notion"],
-    industry: "Social / Consumer",
+      "A peer-to-peer marketplace where people handed real money to people they had never met, in 190+ countries, and just… hoped. I led the UX and visual identity, first through a full redesign, then through the hardest brief of all: switching it off gracefully.",
+    year: "2022–2023",
+    role: "UX & Visual Identity Lead",
+    timeline: "12 months",
+    team: "Me + researcher, PM, engineers",
+    tools: ["Figma", "Illustrator", "After Effects"],
+    industry: "Fintech / Crypto / P2P Marketplace",
     accentColor: "#207ab7",
     image: "/projects/LBCThumb.jpg",
     heroImage: "/projects/lbcbanner2.jpg",
+    heroVideo: {
+      desktop: "/projects/lbc-hero-desktop.mp4",
+      mobile: "/projects/lbc-hero-mobile.mp4",
+      poster: "/projects/lbc-hero-desktop.jpg",
+      posterMobile: "/projects/lbc-hero-mobile.jpg",
+    },
     images: ["/projects/lbcbanner2.jpg", "/projects/lbcBanner2.png"],
-    problem: "Friends lose touch not because they stop caring, but because digital communication feels performative. We needed to strip that away.",
-    process: [
-      "Conducted 24 qualitative interviews across three age groups",
-      "Mapped communication patterns and friction points",
-      "Rapid prototyping across 6 concept directions",
-      "Usability testing with 60 participants over 3 rounds",
+    thesis:
+      "LocalBitcoins was never really a trading product. It was a machine for getting two strangers, who had every reason to distrust each other, to swap money that could never be un-swapped. My job was to design that trust. And then, in 2023, to help everyone walk away from it safely.",
+    acts: [
+      {
+        label: "Act 1",
+        title: "The redesign",
+        goalLead: "Make the platform feel as safe as it actually was.",
+        goals: [
+          "Turn trust from a hope into something you could see on the screen.",
+          "Take the fear out of the scariest moments: choosing a trader, paying into escrow, getting verified.",
+          "Unify a brand that had to read as trustworthy across 190 countries and a dozen languages.",
+        ],
+        process:
+          "We started with real research: 50 interviews across six very different markets, plus analytics and journey mapping. One finding steered everything: people read “outdated” as “unsafe,” and the real panic hit not at signup, but in the silent seconds after the money left their hands. So we designed for that: the anxiety curve, not the homepage. We made escrow legible (“Your money is safely held…” instead of “Funds pending release”), surfaced the real signals that tell you a stranger is safe to trade with, and swapped the one-size-fits-all KYC maze for verification that only asks for what you need, when you need it. The rebrand had exactly one job: make safety visible.",
+        outcome:
+          "User language shifted from “complex” and “risky” to “clear,” “secure,” and “in control,” most of all around the escrow moment that used to be the low point of the whole journey.",
+      },
+      {
+        label: "Act 2",
+        title: "Closing it down",
+        goalLead:
+          "In 2023 the platform had to shut down while it was still holding people’s money.",
+        goals: [
+          "Tell the truth, early, without setting off a panic.",
+          "Get everyone’s funds out safely before the deadlines.",
+          "Keep the brand’s trust intact right to the very last click.",
+        ],
+        process:
+          "Staged, honest communication instead of one scary bombshell: a clear timeline of what would switch off and when (signups first, then new trades, then a withdrawals-only window), so the news landed as a plan, not a fire alarm. We flipped the product’s primary call-to-action from “trade” to “move your funds out,” reordered the dashboard so the next safe step was always the obvious one, and kept the same calm voice to the end, including a heads-up that shutdowns are scammer prime time. The genuinely hard part: telling people to hurry, gently.",
+        outcome:
+          "An orderly wind-down. People moved their funds out without confusion, and the brand’s final impression was that it played it straight.",
+      },
     ],
-    solution:
-      "A feed of short audio and video snacks from your closest circle—no likes, no public audience, just presence.",
-    outcomes: [
-      { metric: "DAU retention", value: "+42%" },
-      { metric: "Avg. sessions/day", value: "3.7" },
-      { metric: "App Store rating", value: "4.8" },
-    ],
+    closing:
+      "Trust isn’t something you design once. It’s earned in every interaction, right down to the last one.",
     content: [
-      {
-        type: "text",
-        heading: "Design Direction",
-        body: "We established a visual language rooted in trust and simplicity — clean surfaces, generous whitespace, and a restrained colour palette that signals credibility without feeling cold.",
-      },
-      {
-        type: "image",
-        src: "/projects/LBCThumb.jpg",
-        caption: "Redesigned home screen — Helsinki usability test round 3",
-        full: true,
-      },
-      {
-        type: "text",
-        heading: "Key Screens",
-        body: "From onboarding to the core trading flow, every screen was stress-tested with real users across three rounds of moderated usability testing.",
-      },
       {
         type: "images",
         srcs: ["/projects/lbcBanner2.png", "/projects/LBCThumb.jpg"],
-        caption: "Left: onboarding flow · Right: active trade view",
+        caption:
+          "Identity in the wild. The system stretched from product UI to campaign.",
       },
     ],
   },
@@ -96,7 +130,7 @@ export const projects: Project[] = [
     description:
       "Building trust and transparency for a next-generation digital banking experience.",
     fullDescription:
-      "Meridian is a digital-first banking platform designed around radical transparency—helping users understand their money, not just manage it.",
+      "Meridian is a digital-first banking platform designed around radical transparency, helping users understand their money, not just manage it.",
     year: "2023",
     role: "Senior Product Designer",
     timeline: "12 months",
@@ -115,7 +149,7 @@ export const projects: Project[] = [
       "Accessibility-first design process",
     ],
     solution:
-      "A dashboard that speaks plainly—predictive insights, plain-language statements, and friction-free transfers.",
+      "A dashboard that speaks plainly: predictive insights, plain-language statements, and friction-free transfers.",
     outcomes: [
       { metric: "Customer satisfaction", value: "+67%" },
       { metric: "Support tickets", value: "-38%" },
@@ -129,7 +163,7 @@ export const projects: Project[] = [
     description:
       "Scaling design consistency across a suite of enterprise products.",
     fullDescription:
-      "Nucleus is a comprehensive design system serving 12 product teams—600+ components, full token architecture, and living documentation.",
+      "Nucleus is a comprehensive design system serving 12 product teams, with 600+ components, full token architecture, and living documentation.",
     year: "2023",
     role: "Design Systems Lead",
     timeline: "18 months",

@@ -23,7 +23,7 @@ const experience = [
     location: "Tampere",
     role: "UX Designer",
     bullets: [
-      "Designed 30+ components for Distributed Control Systems, Safety Systems, and Machine Control interfaces — directly improving operational efficiency.",
+      "Designed 30+ components for Distributed Control Systems, Safety Systems, and Machine Control interfaces, directly improving operational efficiency.",
       "Defined design guidelines and specification practices now adopted as standard across R&D.",
       "Partnered with engineers, PMs, and stakeholders to turn complex industrial requirements into intuitive interfaces.",
     ],
@@ -70,14 +70,14 @@ const education = [
     institution: "COMSATS University",
     location: "Islamabad",
     degree: "Bachelor's in Computer Science",
-    summary: "Software engineering, algorithms, and systems thinking — the technical foundation that informs how I collaborate with engineers.",
+    summary: "Software engineering, algorithms, and systems thinking: the technical foundation that informs how I collaborate with engineers.",
   },
 ];
 
 const philosophy = [
-  { quote: "Design with purpose.", body: "Every element should earn its place. I start with the problem — the right solution follows from understanding the user, not aesthetic preference." },
+  { quote: "Design with purpose.", body: "Every element should earn its place. I start with the problem, and the right solution follows from understanding the user, not aesthetic preference." },
   { quote: "Details matter enormously.", body: "The best design feels inevitable, because someone obsessed over the details until they disappeared." },
-  { quote: "Collaboration is the process.", body: "Great design doesn't happen in isolation. I design with people, not for them — engineers, PMs, and users included." },
+  { quote: "Collaboration is the process.", body: "Great design doesn't happen in isolation. I design with people, not for them: engineers, PMs, and users included." },
 ];
 
 function FadeUp({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -141,7 +141,7 @@ export default function AboutPage() {
           <FadeUp delay={0.1}><Portrait /></FadeUp>
           <FadeUp delay={0.15}>
             <p className="font-[family-name:var(--font-inter)] text-[#0a0a0a]/65 leading-relaxed" style={{ fontSize: "clamp(1.05rem,1.6vw,1.2rem)" }}>
-              I&apos;m Muhammad Ahmed — a UX designer with 5 years in UX and 7 in UI &amp; visual design. Currently at Valmet in Tampere, designing industrial control-system interfaces within the R&amp;D team.
+              I&apos;m Muhammad Ahmed, a UX designer with 5 years in UX and 7 in UI &amp; visual design. Currently at Valmet in Tampere, designing industrial control-system interfaces within the R&amp;D team.
             </p>
             <p className="font-[family-name:var(--font-inter)] text-[#0a0a0a]/65 leading-relaxed mt-5" style={{ fontSize: "clamp(1.05rem,1.6vw,1.2rem)" }}>
               I hold a Master&apos;s in Human-Technology Interaction from Tampere University and have worked across product design, design systems, and brand. I&apos;m passionate about experiences where complexity is hidden and clarity is felt.

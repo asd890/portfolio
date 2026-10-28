@@ -109,7 +109,7 @@ export default function V2About() {
             style={{ fontSize: "clamp(1.25rem, 2.2vw, 1.7rem)", lineHeight: 1.34 }}
           >
             I&apos;m a UX/UI designer with over eight years turning complex problems
-            into clear, human products — across fintech, enterprise, and consumer
+            into clear, human products across fintech, enterprise, and consumer
             apps. I care about the details most people never notice.{" "}
             <span style={{ color: ACCENT }}>Currently open to new work.</span>
           </motion.p>
