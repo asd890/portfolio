@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import V2Nav from "@/components/v2/V2Nav";
 import V2Contact from "@/components/v2/V2Contact";
+import LocalBitcoinsBody from "@/components/case-studies/LocalBitcoinsBody";
 import type { Project, ContentBlock, Act } from "@/lib/projects";
 import { getContrastColor } from "@/lib/colorUtils";
 
@@ -424,104 +425,110 @@ export default function ProjectDetail({ project }: { project: Project }) {
         </motion.div>
       </section>
 
-      {/* The premise — the thesis paragraph on a story-first page, else the challenge */}
-      {(project.thesis || project.problem) && (
-        <section className="mx-auto max-w-5xl px-6 py-16 md:py-24 border-t border-black/5">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-            <Eyebrow>{project.thesis ? "The real problem" : "The challenge"}</Eyebrow>
-          </motion.div>
-          <motion.p
+      {project.customBody === "localbitcoins" ? (
+        <LocalBitcoinsBody closing={project.closing} accent={accent} />
+      ) : (
+        <>
+        {/* The premise — the thesis paragraph on a story-first page, else the challenge */}
+        {(project.thesis || project.problem) && (
+          <section className="mx-auto max-w-5xl px-6 py-16 md:py-24 border-t border-black/5">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <Eyebrow>{project.thesis ? "The real problem" : "The challenge"}</Eyebrow>
+            </motion.div>
+            <motion.p
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-10%" }}
+              variants={fadeUp}
+              className="font-[family-name:var(--font-inter)] font-medium tracking-tight text-[#0a0a0a] max-w-4xl whitespace-pre-line"
+              style={{ fontSize: "clamp(1.5rem, 3.4vw, 2.6rem)", lineHeight: 1.22 }}
+            >
+              {project.thesis || project.problem}
+            </motion.p>
+          </section>
+        )}
+
+        {/* Acts */}
+        {project.acts && project.acts.length > 0 && <Acts acts={project.acts} />}
+
+        {/* Process */}
+        {project.process && project.process.length > 0 && (
+          <section className="mx-auto max-w-5xl px-6 py-16 md:py-24 border-t border-black/5">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <Eyebrow>Process</Eyebrow>
+            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {project.process.map((step, i) => (
+                <motion.div
+                  key={i}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-5%" }}
+                  variants={{
+                    hidden: { opacity: 0, y: 24 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.08, ease } },
+                  }}
+                  className="flex gap-4 rounded-3xl bg-[#eceae5] p-6"
+                >
+                  <span
+                    className="font-[family-name:var(--font-inter)] font-semibold text-lg flex-shrink-0 leading-none"
+                    style={{ color: ACCENT }}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="font-[family-name:var(--font-inter)] text-sm text-[#0a0a0a]/70 leading-relaxed">{step}</p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Rich content blocks */}
+        {project.content && project.content.length > 0 && (
+          <div className="border-t border-black/5">
+            <ContentBlocks blocks={project.content} />
+          </div>
+        )}
+
+        {/* Solution, or the closing line on a story-first page — accent card echoing the home contact section */}
+        {(project.closing || project.solution) && (
+        <section className="px-6 py-8 md:py-12 border-t border-black/5">
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-10%" }}
             variants={fadeUp}
-            className="font-[family-name:var(--font-inter)] font-medium tracking-tight text-[#0a0a0a] max-w-4xl whitespace-pre-line"
-            style={{ fontSize: "clamp(1.5rem, 3.4vw, 2.6rem)", lineHeight: 1.22 }}
+            className="relative mx-auto max-w-5xl overflow-hidden rounded-[28px] p-8 md:p-14"
+            style={{ backgroundColor: accent }}
           >
-            {project.thesis || project.problem}
-          </motion.p>
-        </section>
-      )}
-
-      {/* Acts */}
-      {project.acts && project.acts.length > 0 && <Acts acts={project.acts} />}
-
-      {/* Process */}
-      {project.process && project.process.length > 0 && (
-        <section className="mx-auto max-w-5xl px-6 py-16 md:py-24 border-t border-black/5">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-            <Eyebrow>Process</Eyebrow>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {project.process.map((step, i) => (
-              <motion.div
-                key={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-5%" }}
-                variants={{
-                  hidden: { opacity: 0, y: 24 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.08, ease } },
-                }}
-                className="flex gap-4 rounded-3xl bg-[#eceae5] p-6"
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to right, rgba(255,255,255,0.10) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.10) 1px, transparent 1px)",
+                backgroundSize: `${CELL}px ${CELL}px`,
+                maskImage: "radial-gradient(120% 120% at 80% 0%, #000 40%, transparent 100%)",
+                WebkitMaskImage: "radial-gradient(120% 120% at 80% 0%, #000 40%, transparent 100%)",
+              }}
+            />
+            <div className="relative">
+              <p
+                className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase mb-5"
+                style={{ color: textColor, opacity: 0.6 }}
               >
-                <span
-                  className="font-[family-name:var(--font-inter)] font-semibold text-lg flex-shrink-0 leading-none"
-                  style={{ color: ACCENT }}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <p className="font-[family-name:var(--font-inter)] text-sm text-[#0a0a0a]/70 leading-relaxed">{step}</p>
-              </motion.div>
-            ))}
-          </div>
+                {project.closing ? "In closing" : "Solution"}
+              </p>
+              <p
+                className="font-[family-name:var(--font-inter)] font-medium tracking-tight max-w-2xl"
+                style={{ color: textColor, fontSize: "clamp(1.5rem, 3.2vw, 2.4rem)", lineHeight: 1.2 }}
+              >
+                {project.closing || project.solution}
+              </p>
+            </div>
+          </motion.div>
         </section>
-      )}
-
-      {/* Rich content blocks */}
-      {project.content && project.content.length > 0 && (
-        <div className="border-t border-black/5">
-          <ContentBlocks blocks={project.content} />
-        </div>
-      )}
-
-      {/* Solution, or the closing line on a story-first page — accent card echoing the home contact section */}
-      {(project.closing || project.solution) && (
-      <section className="px-6 py-8 md:py-12 border-t border-black/5">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-10%" }}
-          variants={fadeUp}
-          className="relative mx-auto max-w-5xl overflow-hidden rounded-[28px] p-8 md:p-14"
-          style={{ backgroundColor: accent }}
-        >
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, rgba(255,255,255,0.10) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.10) 1px, transparent 1px)",
-              backgroundSize: `${CELL}px ${CELL}px`,
-              maskImage: "radial-gradient(120% 120% at 80% 0%, #000 40%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(120% 120% at 80% 0%, #000 40%, transparent 100%)",
-            }}
-          />
-          <div className="relative">
-            <p
-              className="font-[family-name:var(--font-inter)] text-xs tracking-widest uppercase mb-5"
-              style={{ color: textColor, opacity: 0.6 }}
-            >
-              {project.closing ? "In closing" : "Solution"}
-            </p>
-            <p
-              className="font-[family-name:var(--font-inter)] font-medium tracking-tight max-w-2xl"
-              style={{ color: textColor, fontSize: "clamp(1.5rem, 3.2vw, 2.4rem)", lineHeight: 1.2 }}
-            >
-              {project.closing || project.solution}
-            </p>
-          </div>
-        </motion.div>
-      </section>
+        )}
+        </>
       )}
 
       {/* Outcomes */}

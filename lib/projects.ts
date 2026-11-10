@@ -50,6 +50,9 @@ export interface Project {
   acts?: Act[];
   /** Closing line shown in the accent card. */
   closing?: string;
+  /** Opts this project out of the generic body in favour of a bespoke component.
+   *  ProjectDetail keeps the hero, meta grid and footer either way. */
+  customBody?: "localbitcoins";
   /** Rich content sections shown between Process and Solution. */
   content?: ContentBlock[];
 }
@@ -79,6 +82,7 @@ export const projects: Project[] = [
       posterMobile: "/projects/lbc-hero-mobile.jpg",
     },
     images: ["/projects/lbcbanner2.jpg", "/projects/lbcBanner2.png"],
+    customBody: "localbitcoins",
     thesis:
       "LocalBitcoins was never really a trading product. It was a machine for getting two strangers, who had every reason to distrust each other, to swap money that could never be un-swapped. My job was to design that trust. And then, in 2023, to help everyone walk away from it safely.",
     acts: [
